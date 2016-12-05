@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Sample FirebaseUI App</title>
+  </head>
+  <body>
+  <h1>注册用户</h1>
+    <div><label for="email">邮箱</label> <input id="email" type="email" name="email"></div>
+    <div><label for="password">密码</label> <input id="password" type="password" name="password"></div>
+    <div><label for="password_rp">重复</label> <input id="password_rp" type="password" name="password_rp"></div>
+    <div><button onclick="register();" id="bt_register">注册</button></div>
+  </body>
+  <script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+    <script>
+      var config = {
+        apiKey: "AIzaSyDDKaD6t443xGgY6xvw7gm2W6B-z0Qf83I",
+        authDomain: "jithee-chat.firebaseapp.com",
+        databaseURL: "https://jithee-chat.firebaseio.com",
+        storageBucket: "jithee-chat.appspot.com",
+        messagingSenderId: "202420364388"
+        };
+        firebase.initializeApp(config);
+
+        function register() {
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var password_rp = document.getElementById("password_rp").value;
+            if (password != password_rp) {
+                alert("两次密码输入不一样");
+                return;
+            }
+
+            firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                if (errorCode == 'auth/weak-password') {
+                    alert('密码太简单了');
+                } else if(errorCode == "auth/email-already-in-use"){
+                    alert('这个邮箱地址已经注册过了');
+                } else if(errorCode == "auth/invalid-email"){
+                    alert('邮箱地址不合法');
+                } else if(errorCode == "auth/operation-not-allowed"){
+                    alert('目前邮箱地址注册已禁用');
+                } else {
+                    alert(errorMessage);
+                }
+                console.log(error);
+            });
+        }
+    </script>
+</html>
