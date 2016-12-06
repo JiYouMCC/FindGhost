@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>抓鬼</title>
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+  </head>
+  <body>
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">抓鬼</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul id="menu_login" class="nav navbar-nav navbar-right">
+            <li><a id="menu_register" href="#">注册</a></li>
+            <li><a id="menu_login" href="#">登录</a></li>
+          </ul>
+          <ul id="button_logout" class="nav navbar-nav navbar-right">
+            <li><a id="menu_update_display_name" href="#">管理</a></li>
+            <li><a id="menu_logout" href="#">退出</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9">
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div id="messages" style="height: 600px; overflow-y: auto"></div>
+              <textarea id="chat" class="form-control" rows="3"></textarea>
+              <button id="button_chat" class="btn btn-default">输入</button>
+              <button id="button_ready_play" class="btn btn-default">准备玩</button>
+              <button id="button_ready_white" class="btn btn-default">准备当小白</button>
+              <button id="button_ready_owner" class="btn btn-default">我有词</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+        <div class="panel panel-default">
+          <ul id="user_list" class="list-group">
+          </ul>
+        </div>
+        </div>
+      </div>
+    </div>
+    <!-- register modal -->
+    <div id="modal_register" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_login" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+            </button>
+            <h4 class="modal-title">注册</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label for="register_email" class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-10">
+                  <input id="register_email" type="email" name="register_email" class="form-control" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="register_password" class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-10">
+                  <input id="register_password" type="password" name="register_password" class="form-control" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="register_password_rp" class="col-sm-2 control-label">重复密码</label>
+                <div class="col-sm-10">
+                  <input id="register_password_rp" type="password" name="register_password_rp" class="form-control" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="button_register" data-loading-text="注册中" type="submit" class="btn btn-primary" >注册</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- login modal -->
+    <div id="modal_login" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_login" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+            </button>
+            <h4 class="modal-title">登录</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label for="login_email" class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-10">
+                  <input id="login_email" type="email" name="login_email" class="form-control" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="login_password" class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-10">
+                  <input id="login_password" type="password" name="login_password" class="form-control" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="button_login" data-loading-text="登录中" type="submit" class="btn btn-primary">登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- user display modal -->
+    <div id="modal_update" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_login" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+            </button>
+            <h4 class="modal-title">修改昵称</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">昵称</label>
+                <div class="col-sm-10">
+                  <input id="display_name" type="text" name="display_name" class="form-control" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="button_update_display_name" data-loading-text="修改中" type="submit" class="btn btn-primary">修改</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>
+  <script type="text/javascript">
+    var config = {
+      authDomain: "findghost.wilddog.com",
+      syncURL: "https://findghost.wilddogio.com"
+    };
+
+    wilddog.initializeApp(config);
+
+    var STATUS = {
+      READY_PLAY: "我要抓鬼",
+      READY_WHITE: "要当小白",
+      READY_OWNER: "我有词",
+      PLAY: "正在抓鬼",
+      WHITE: "小白",
+      OWNER: "打酱油的法官"
+    }
+
+    function getUserDisplay() {
+      var user = getCurrentUser();
+      if (user != null) {
+        var name = user.displayName;
+        if (name) {
+          return name;
+        }
+
+        var email = user.email;
+        return email.split('@')[0];
+      } else {
+        return undefined;
+      }
+    }
+
+    function getCurrentUser() {
+      return wilddog.auth().currentUser;
+    }
+
+    function getCurrentDate() {
+      var currentDate = undefined;
+      wilddog.sync().ref("/.info/serverTimeOffset").once('value',function(snapshot) {
+        var offset = snapshot.val();
+        currentDate = (new Date).getTime() + offset;
+      })
+      while(currentDate) {
+        return currentDate;
+      }
+    }
+
+    $("#button_register").click(function(){
+      var email = $("#register_email").val();
+      var password = $("#register_password").val();
+      var password_rp = $("#register_password_rp").val();
+      if (password != password_rp) {
+        alert("两次密码输入不一样");
+        return;
+      }
+
+      wilddog.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+        alert(error);
+      });
+    });
+
+    $("#menu_logout").click(function(){
+      var user = getCurrentUser();
+      if (user) {
+        wilddog.sync().ref("/users/" + user.uid).remove();
+      }
+
+      wilddog.auth().signOut().catch(function(error) {
+        console.log(error);
+      });
+    });
+
+    $("#menu_update_display_name").click(function(){
+      $("#name").val(getUserDisplay());
+      $("#modal_update").modal('show');
+    });
+
+    $("#menu_register").click(function(){
+      if (!getCurrentUser()) {
+        $("#modal_register").modal('show');
+      }
+    });
+
+    $("#menu_login").click(function(){
+      if (!getCurrentUser()) {
+        $("#modal_login").modal('show');
+      }
+    });
+
+    $("#button_update_display_name").click(function(){
+      $("#button_update").button('loading');
+      wilddog.auth().currentUser.updateProfile({
+        displayName: $("#display_name").val()
+      }).then(function(){
+        $("#button_update").button('reset');
+        $("#menu_update_display_name").text(getUserDisplay());
+        $('#modal_update').modal('hide');
+      }).catch(function(error) {
+        console.log(error);
+      });
+    });
+
+    $("#button_login").click(function() {
+      $("#button_login").button('loading');
+        var email = $("#login_email").val();
+        var password = $("#login_password").val();
+        wilddog.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        console.log(error);
+      });
+    });
+
+    $("#button_chat").click(function(){
+      if (getCurrentUser()) {
+        var ref = wilddog.sync().ref("/chat");
+        var date = getCurrentDate();
+        ref.child(date).set({
+            "userDisplay": getUserDisplay(),
+            "message": $("#chat").val()
+        });
+        $("#chat").val("");
+        $("#chat").focus();
+      }
+    });
+
+    wilddog.auth().onAuthStateChanged(function(user) {
+      if (user) {
+          $("#button_login").button('reset');
+          $("#button_register").button('reset');
+          $('#modal_login').modal('hide');
+          $('#modal_register').modal('hide');
+          $("#button_logout").show();
+          $("#menu_login").hide();
+          $("#menu_update_display_name").text(getUserDisplay());
+        } else {
+          $("#button_logout").hide();
+          $("#menu_login").show();
+        }
+    });
+
+    wilddog.sync().ref("/chat").on("value", function(snapshot) {
+      $("#messages").text("");
+      var messages = snapshot.val();
+      for (date in messages) {
+        var message = messages[date].message;
+        var userDisplay = messages[date].userDisplay;
+        var dateTime = new Date(parseInt(date));
+        $("#messages").append($("<div></div>").append(
+          $("<span></span>").text(("0" + dateTime.getHours()).slice(-2) + ":" + ("0" + dateTime.getMinutes()).slice(-2)  + ":" + ("0" + dateTime.getSeconds()).slice(-2)+" ")
+          ).append(
+          $("<span></span>").text(userDisplay+":")
+          ).append(
+          $("<span></span>").text(message)
+          ))
+      };
+      $("#messages").scrollTop($("#messages").prop("scrollHeight"));
+    });
+
+    wilddog.sync().ref("/users").on("value", function(snapshot) {
+        $("#user_list").text("");
+        var users = snapshot.val();
+        for (uid in users) {
+          var userDisplay = users[uid].userDisplay;
+          var status = users[uid].status;
+          $("#user_list").append(
+            $("<li></li>").addClass("list-group-item").text(userDisplay).append(
+              $("<span></span>").addClass("badge").text(status)));
+        }
+
+        var user = getCurrentUser();
+        if (user) {
+          wilddog.sync().ref("/users/" + user.uid).once("value",function(snapshot){
+            var status = snapshot.val().status;
+            $("#button_ready_play").removeAttr("disabled");
+            $("#button_ready_white").removeAttr("disabled");
+            $("#button_ready_owner").removeAttr("disabled");
+            if (status == STATUS.READY_PLAY) {
+              $("#button_ready_play").attr("disabled","disabled");
+            } else if (status == STATUS.READY_WHITE) {
+              $("#button_ready_white").attr("disabled","disabled");
+            } else if (status == STATUS.READY_OWNER) {
+              $("#button_ready_owner").attr("disabled","disabled");
+            }
+          })
+        }
+    });
+
+    setInterval(function(){
+      var user = getCurrentUser();
+      if (user) {
+          wilddog.sync().ref("/users/" + user.uid).child("date").set(wilddog.sync().ServerValue.TIMESTAMP);
+          wilddog.sync().ref("/users/" + user.uid).child("userDisplay").set(getUserDisplay());
+        }
+    }, 1000);
+
+    $("#button_ready_play").click(function(event) {
+      var user = getCurrentUser();
+      if (user) {
+          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_PLAY);
+        }
+    });
+
+    $("#button_ready_white").click(function(event) {
+      var user = getCurrentUser();
+      if (user) {
+          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_WHITE);
+        }
+    });
+
+    $("#button_ready_owner").click(function(event) {
+      var user = getCurrentUser();
+      if (user) {
+          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_OWNER);
+        }
+    });
+
+    setInterval(function(){
+      var currentDate = getCurrentDate();
+      wilddog.sync().ref("/users").once("value", function(snapshot) {
+        var users = snapshot.val();
+        for (uid in users) {
+          var date = users[uid].date;
+          var userDisplay = users[uid].userDisplay;
+          if (date + 2* 60 * 1000 < currentDate) {
+            wilddog.sync().ref("/users/" + uid).remove();
+          } /*else if (date + 30 * 1000 < currentDate) {
+            wilddog.sync().ref("/users").child(uid).set({
+              "userDisplay": userDisplay,
+              "date": date,
+              "status": "好像掉了"
+            });
+          }*/
+        }
+      });
+      }, 10000);
+  </script>
+
+</html>
