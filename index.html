@@ -155,14 +155,9 @@
   <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
   <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
   <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>
+  <script src="findghost.js"></script>
+  <script src="index.js"></script>
   <script type="text/javascript">
-    var config = {
-      authDomain: "findghost.wilddog.com",
-      syncURL: "https://findghost.wilddogio.com"
-    };
-
-    wilddog.initializeApp(config);
-
     var STATUS = {
       READY_PLAY: "我要抓鬼",
       READY_WHITE: "要当小白",
@@ -202,82 +197,7 @@
       }
     }
 
-    $("#button_register").click(function(){
-      var email = $("#register_email").val();
-      var password = $("#register_password").val();
-      var password_rp = $("#register_password_rp").val();
-      if (password != password_rp) {
-        alert("两次密码输入不一样");
-        return;
-      }
 
-      wilddog.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
-        alert(error);
-      });
-    });
-
-    $("#menu_logout").click(function(){
-      var user = getCurrentUser();
-      if (user) {
-        wilddog.sync().ref("/users/" + user.uid).remove();
-      }
-
-      wilddog.auth().signOut().catch(function(error) {
-        console.log(error);
-      });
-    });
-
-    $("#menu_update_display_name").click(function(){
-      $("#name").val(getUserDisplay());
-      $("#modal_update").modal('show');
-    });
-
-    $("#menu_register").click(function(){
-      if (!getCurrentUser()) {
-        $("#modal_register").modal('show');
-      }
-    });
-
-    $("#menu_login").click(function(){
-      if (!getCurrentUser()) {
-        $("#modal_login").modal('show');
-      }
-    });
-
-    $("#button_update_display_name").click(function(){
-      $("#button_update").button('loading');
-      wilddog.auth().currentUser.updateProfile({
-        displayName: $("#display_name").val()
-      }).then(function(){
-        $("#button_update").button('reset');
-        $("#menu_update_display_name").text(getUserDisplay());
-        $('#modal_update').modal('hide');
-      }).catch(function(error) {
-        console.log(error);
-      });
-    });
-
-    $("#button_login").click(function() {
-      $("#button_login").button('loading');
-        var email = $("#login_email").val();
-        var password = $("#login_password").val();
-        wilddog.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
-        console.log(error);
-      });
-    });
-
-    $("#button_chat").click(function(){
-      if (getCurrentUser()) {
-        var ref = wilddog.sync().ref("/chat");
-        var date = getCurrentDate();
-        ref.child(date).set({
-            "userDisplay": getUserDisplay(),
-            "message": $("#chat").val()
-        });
-        $("#chat").val("");
-        $("#chat").focus();
-      }
-    });
 
     wilddog.auth().onAuthStateChanged(function(user) {
       if (user) {
@@ -294,7 +214,7 @@
         }
     });
 
-    wilddog.sync().ref("/chat").on("value", function(snapshot) {
+    /*wilddog.sync().ref("/chat").on("value", function(snapshot) {
       $("#messages").text("");
       var messages = snapshot.val();
       for (date in messages) {
@@ -311,8 +231,8 @@
       };
       $("#messages").scrollTop($("#messages").prop("scrollHeight"));
     });
-
-    wilddog.sync().ref("/users").on("value", function(snapshot) {
+*/
+    /*wilddog.sync().ref("/users").on("value", function(snapshot) {
         $("#user_list").text("");
         var users = snapshot.val();
         for (uid in users) {
@@ -339,7 +259,7 @@
             }
           })
         }
-    });
+    });*/
 
     setInterval(function(){
       var user = getCurrentUser();
