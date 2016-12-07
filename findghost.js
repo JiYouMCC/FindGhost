@@ -1,6 +1,7 @@
 var findghost = {
     appid: "findghost",
     userSleepTime: 2 * 60 * 1000,
+    showMessageCount: 512,
     MESSAGE_TYPE: {
         SYSTEM: "系统消息",
         CHAT: "聊天消息"
@@ -10,7 +11,6 @@ var findghost = {
             authDomain: this.appid + ".wilddog.com",
             syncURL: "https://" + this.appid + ".wilddogio.com"
         };
-
         wilddog.initializeApp(config);
     },
     handleError: function(error) {
@@ -42,7 +42,10 @@ var findghost = {
         register: function(email, password, callback) {
             var user = this.getCurrentUser();
             if (!user) {
-                wilddog.auth().createUserWithEmailAndPassword(email, password).then(callback).catch(function(error) {
+                wilddog.auth().createUserWithEmailAndPassword(email, password).then(function(user) {
+                    findghost.hall.sendSystemMessage("“" + user.email.split('@')[0] + "”" + "加入了游戏");
+                    callback(user);
+                }).catch(function(error) {
                     findghost.handleError(error);
                 });
             }
@@ -50,7 +53,9 @@ var findghost = {
         login: function(email, password) {
             var user = this.getCurrentUser();
             if (!user) {
-                wilddog.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+                wilddog.auth().signInWithEmailAndPassword(email, password).then(function(user) {
+                    findghost.hall.sendSystemMessage("“" + user.displayName + "”" + "回来了");
+                }).catch(function(error) {
                     findghost.handleError(error);
                 });
             }
@@ -70,11 +75,18 @@ var findghost = {
             }
         },
         setDisplayName: function(displayName, callback) {
-            wilddog.auth().currentUser.updateProfile({
-                displayName: displayName
-            }).then(callback).catch(function(error) {
-                findghost.handleError(error);
-            });
+            var user = this.getCurrentUser();
+            if (user) {
+                var oldDisplay = this.getDisplayName();
+                wilddog.auth().currentUser.updateProfile({
+                    displayName: displayName
+                }).then(function(user) {
+                    findghost.hall.sendSystemMessage("“" + oldDisplay + "”改名为“" + displayName + "”");
+                    callback(user);
+                }).catch(function(error) {
+                    findghost.handleError(error);
+                });
+            }
         },
         getEmail: function() {
             var user = this.getCurrentUser();
@@ -87,20 +99,24 @@ var findghost = {
         }
     },
     hall: {
-        out: function(uid) {
+        out: function(uid, displayName) {
             wilddog.sync().ref("/hall/users/" + uid).remove();
+            findghost.hall.sendSystemMessage("“" + displayName + "”" + "离开了");
         },
         in : function(uid, displayName) {
-            wilddog.sync().ref("/hall/users/").child(uid).set({
-                "displayName": displayName,
-                "date": findghost.getCurrentDate()
-            });
+            var date = findghost.getCurrentDate();
+            if (date) {
+                wilddog.sync().ref("/hall/users/").child(uid).set({
+                    "displayName": displayName,
+                    "date": date
+                });
+            }
         },
         updateUserCallback: function(callback) {
             wilddog.sync().ref("/hall/users").on("value", callback);
         },
         updateMessageCallback: function(callback) {
-            wilddog.sync().ref("/hall/message").on("value", callback);
+            wilddog.sync().ref("/hall/message").orderByKey().limitToLast(findghost.showMessageCount).on("value", callback);
         },
         removeSleepUser: function() {
             var user = findghost.user.getCurrentUser();
@@ -112,7 +128,7 @@ var findghost = {
                         var date = users[uid].date;
                         var userDisplay = users[uid].displayName;
                         if (date + findghost.userSleepTime < currentDate) {
-                            findghost.hall.out(uid);
+                            findghost.hall.out(uid, userDisplay);
                         }
                     }
                 });
@@ -132,6 +148,9 @@ var findghost = {
             if (user) {
                 this.sendMessage(user.uid, findghost.user.getDisplayName(), message, findghost.MESSAGE_TYPE.CHAT, callback);
             }
+        },
+        sendSystemMessage: function(message, callback) {
+            this.sendMessage("", "", message, findghost.MESSAGE_TYPE.SYSTEM, callback);
         }
     }
 }

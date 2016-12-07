@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,7 +9,7 @@
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
   </head>
   <body>
-    <nav class="navbar navbar-default" role="navigation">
+    <nav id="nav" class="navbar navbar-default" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
@@ -22,12 +21,12 @@
           <a class="navbar-brand" href="#">抓鬼</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul id="menu_login" class="nav navbar-nav navbar-right">
+          <ul id="menu_online" class="nav navbar-nav navbar-right">
             <li><a id="menu_register" href="#">注册</a></li>
             <li><a id="menu_login" href="#">登录</a></li>
           </ul>
           <ul id="button_logout" class="nav navbar-nav navbar-right">
-            <li><a id="menu_update_display_name" href="#">管理</a></li>
+            <li><a id="menu_update_display_name" href="#"> </a></li>
             <li><a id="menu_logout" href="#">退出</a></li>
           </ul>
         </div>
@@ -36,19 +35,33 @@
     <div class="container">
       <div class="row">
         <div class="col-md-9">
-          <div class="panel panel-default">
-            <div class="panel-body">
-              <div id="messages" style="height: 600px; overflow-y: auto"></div>
-              <textarea id="chat" class="form-control" rows="3"></textarea>
-              <button id="button_chat" class="btn btn-default">输入</button>
-              <button id="button_ready_play" class="btn btn-default">准备玩</button>
-              <button id="button_ready_white" class="btn btn-default">准备当小白</button>
-              <button id="button_ready_owner" class="btn btn-default">我有词</button>
+          <div id="left_pannel" class="panel panel-default">
+          <div id="panel_title" class="panel-heading">游戏未开始</div>
+            <div class="list-group">
+              <div class="list-group-item">
+                <div id="messages" style="overflow-y: auto"></div>
+              </div>
+              <div class="list-group-item">
+              <div class="input-group">
+                <div class="input-group-btn" style="width: 80%">
+                  <input type="text" id="chat" class="form-control">
+                </div>
+                <div class="input-group-btn">
+                  <button id="button_chat" class="btn btn-default form-control">输入</button>
+                </div>
+              </div>
+              </div>
+              <div class="list-group-item">
+                <button id="button_ready_play" class="btn btn-default">准备玩</button>
+                <button id="button_ready_white" class="btn btn-default">准备当小白</button>
+                <button id="button_ready_owner" class="btn btn-default">我有词</button>
+              </div>
             </div>
           </div>
         </div>
         <div class="col-md-3">
         <div class="panel panel-default">
+          <div class="panel-heading">在线列表 <span id="online_count" class="badge panel-title">0</span></div>
           <ul id="user_list" class="list-group">
           </ul>
         </div>
@@ -56,7 +69,7 @@
       </div>
     </div>
     <!-- register modal -->
-    <div id="modal_register" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_login" aria-hidden="true">
+    <div id="modal_register" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_register" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -126,7 +139,7 @@
       </div>
     </div>
     <!-- user display modal -->
-    <div id="modal_update" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_login" aria-hidden="true">
+    <div id="modal_update" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_update" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -157,158 +170,4 @@
   <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>
   <script src="findghost.js"></script>
   <script src="index.js"></script>
-  <script type="text/javascript">
-    var STATUS = {
-      READY_PLAY: "我要抓鬼",
-      READY_WHITE: "要当小白",
-      READY_OWNER: "我有词",
-      PLAY: "正在抓鬼",
-      WHITE: "小白",
-      OWNER: "打酱油的法官"
-    }
-
-    function getUserDisplay() {
-      var user = getCurrentUser();
-      if (user != null) {
-        var name = user.displayName;
-        if (name) {
-          return name;
-        }
-
-        var email = user.email;
-        return email.split('@')[0];
-      } else {
-        return undefined;
-      }
-    }
-
-    function getCurrentUser() {
-      return wilddog.auth().currentUser;
-    }
-
-    function getCurrentDate() {
-      var currentDate = undefined;
-      wilddog.sync().ref("/.info/serverTimeOffset").once('value',function(snapshot) {
-        var offset = snapshot.val();
-        currentDate = (new Date).getTime() + offset;
-      })
-      while(currentDate) {
-        return currentDate;
-      }
-    }
-
-
-
-    wilddog.auth().onAuthStateChanged(function(user) {
-      if (user) {
-          $("#button_login").button('reset');
-          $("#button_register").button('reset');
-          $('#modal_login').modal('hide');
-          $('#modal_register').modal('hide');
-          $("#button_logout").show();
-          $("#menu_login").hide();
-          $("#menu_update_display_name").text(getUserDisplay());
-        } else {
-          $("#button_logout").hide();
-          $("#menu_login").show();
-        }
-    });
-
-    /*wilddog.sync().ref("/chat").on("value", function(snapshot) {
-      $("#messages").text("");
-      var messages = snapshot.val();
-      for (date in messages) {
-        var message = messages[date].message;
-        var userDisplay = messages[date].userDisplay;
-        var dateTime = new Date(parseInt(date));
-        $("#messages").append($("<div></div>").append(
-          $("<span></span>").text(("0" + dateTime.getHours()).slice(-2) + ":" + ("0" + dateTime.getMinutes()).slice(-2)  + ":" + ("0" + dateTime.getSeconds()).slice(-2)+" ")
-          ).append(
-          $("<span></span>").text(userDisplay+":")
-          ).append(
-          $("<span></span>").text(message)
-          ))
-      };
-      $("#messages").scrollTop($("#messages").prop("scrollHeight"));
-    });
-*/
-    /*wilddog.sync().ref("/users").on("value", function(snapshot) {
-        $("#user_list").text("");
-        var users = snapshot.val();
-        for (uid in users) {
-          var userDisplay = users[uid].userDisplay;
-          var status = users[uid].status;
-          $("#user_list").append(
-            $("<li></li>").addClass("list-group-item").text(userDisplay).append(
-              $("<span></span>").addClass("badge").text(status)));
-        }
-
-        var user = getCurrentUser();
-        if (user) {
-          wilddog.sync().ref("/users/" + user.uid).once("value",function(snapshot){
-            var status = snapshot.val().status;
-            $("#button_ready_play").removeAttr("disabled");
-            $("#button_ready_white").removeAttr("disabled");
-            $("#button_ready_owner").removeAttr("disabled");
-            if (status == STATUS.READY_PLAY) {
-              $("#button_ready_play").attr("disabled","disabled");
-            } else if (status == STATUS.READY_WHITE) {
-              $("#button_ready_white").attr("disabled","disabled");
-            } else if (status == STATUS.READY_OWNER) {
-              $("#button_ready_owner").attr("disabled","disabled");
-            }
-          })
-        }
-    });*/
-
-    setInterval(function(){
-      var user = getCurrentUser();
-      if (user) {
-          wilddog.sync().ref("/users/" + user.uid).child("date").set(wilddog.sync().ServerValue.TIMESTAMP);
-          wilddog.sync().ref("/users/" + user.uid).child("userDisplay").set(getUserDisplay());
-        }
-    }, 1000);
-
-    $("#button_ready_play").click(function(event) {
-      var user = getCurrentUser();
-      if (user) {
-          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_PLAY);
-        }
-    });
-
-    $("#button_ready_white").click(function(event) {
-      var user = getCurrentUser();
-      if (user) {
-          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_WHITE);
-        }
-    });
-
-    $("#button_ready_owner").click(function(event) {
-      var user = getCurrentUser();
-      if (user) {
-          wilddog.sync().ref("/users/" + user.uid).child("status").set(STATUS.READY_OWNER);
-        }
-    });
-
-    setInterval(function(){
-      var currentDate = getCurrentDate();
-      wilddog.sync().ref("/users").once("value", function(snapshot) {
-        var users = snapshot.val();
-        for (uid in users) {
-          var date = users[uid].date;
-          var userDisplay = users[uid].userDisplay;
-          if (date + 2* 60 * 1000 < currentDate) {
-            wilddog.sync().ref("/users/" + uid).remove();
-          } /*else if (date + 30 * 1000 < currentDate) {
-            wilddog.sync().ref("/users").child(uid).set({
-              "userDisplay": userDisplay,
-              "date": date,
-              "status": "好像掉了"
-            });
-          }*/
-        }
-      });
-      }, 10000);
-  </script>
-
 </html>
