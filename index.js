@@ -1,4 +1,4 @@
-findghost.init();
+findghost.init("findghost");
 setInterval(function() {
     findghost.hall.removeSleepUser();
 }, 10000);
@@ -40,41 +40,31 @@ findghost.hall.updateMessageCallback(function(snapshot) {
         var messageType = messages[date].type;
         var dateTime = new Date(parseInt(date));
         if (messageType == findghost.MESSAGE_TYPE.SYSTEM) {
-            $("#messages").append(
-                $("<div></div>").addClass("text-danger").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime) + " ").append(
-                        $("<span></span>").text(message)
-                    )
-                )
-            );
+            $("#messages").append($("<div></div>").addClass("text-danger").append($("<span></span>").text(findghost.formatDate(dateTime) + " ").append($("<span></span>").text(message))));
         } else if (messageType == findghost.MESSAGE_TYPE.GAME) {
-            $("#messages").append(
-                $("<div></div>").addClass("text-info").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime) + " ")).append(
-                    $("<span></span>").text(message)
-                )
-            );
+            $("#messages").append($("<div></div>").addClass("text-info").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(message)));
         } else {
             var userDisplay = messages[date].displayName;
-            $("#messages").append(
-                $("<div></div>").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime) + " ")
-                ).append(
-                    $("<span></span>").text(userDisplay + "：")
-                ).append(
-                    $("<span></span>").text(message)
-                )
-            );
+            $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(userDisplay + "：")).append($("<span></span>").text(message)));
         }
     };
     $("#messages").scrollTop($("#messages").prop("scrollHeight"));
 });
-findghost.user.updateCallback(function() {
-    var user = findghost.user.getCurrentUser();
+findghost.user.updateCallback(function(user) {
     findghost.game.getStatus(function(gameStatus) {
-        formStatusSetting(user, undefined, gameStatus);
+        findghost.game.getRole(function(gameRole) {
+            formStatusSetting(user, gameRole, gameStatus);
+        });
     });
-
+    if(user) {
+        findghost.game.updateRoleCallback(function(gameRole) {
+            findghost.game.getStatus(function(gameStatus) {
+                formStatusSetting(user, gameRole, gameStatus);
+            });
+        })
+    } else {
+        findghost.game.removeRoleCallback();
+    }
 });
 findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
@@ -82,18 +72,17 @@ findghost.game.updateUserCallback(function(users) {
     for (uid in users) {
         var displayName = users[uid].displayName;
         var role = users[uid].role
-        $("#gamer_list").append(
-            $("<li></li>").addClass("list-group-item").text(displayName).append(
-                $("<span></span>").addClass("badge").text(role)
-            )
-        );
+        $("#gamer_list").append($("<li></li>").addClass("list-group-item").text(displayName).append($("<span></span>").addClass("badge").text(role)));
         count += 1;
     }
-
     $("#gamer_count").text(count);
 });
-findghost.game.updateStatusCallback(function(status) {
-    $("#span_game_status").text(status);
+findghost.game.updateStatusCallback(function(gameStatus) {
+    $("#span_game_status").text(gameStatus);
+    var user = findghost.user.getCurrentUser();
+    findghost.game.getRole(function(gameRole) {
+        formStatusSetting(user, gameRole, gameStatus);
+    });
 });
 
 function formStatusSetting(user, gameRole, gameStatus) {
@@ -114,22 +103,29 @@ function formStatusSetting(user, gameRole, gameStatus) {
                 case findghost.GAME_STATUS.NOT_START:
                 case findghost.GAME_STATUS.READY:
                     if (gameRole) {
-                        $("#button_cancel").removeAttr('disabled');
+                        $("#button_cancel").show();
+                        $("#button_ready_play").hide();
+                        $("#button_ready_white").hide();
+                        $("#button_ready_owner").hide();
                     } else {
-                        $("#button_ready_play").removeAttr('disabled');
-                        $("#button_ready_white").removeAttr('disabled');
+                        $("#button_ready_play").show();
+                        $("#button_ready_white").show();
+                        $("#button_ready_owner").show();
+                        $("#button_cancel").hide();
                     }
+                    $("#button_pass").hide();
+                    $("#button_white").hide();
             }
         }
     } else {
         $("#chat").attr('disabled', 'disabled');
         $("#button_chat").attr('disabled', 'disabled');
-        $("#button_ready_play").attr('disabled', 'disabled');
-        $("#button_ready_white").attr('disabled', 'disabled');
-        $("#button_ready_owner").attr('disabled', 'disabled');
-        $("#button_cancel").attr('disabled', 'disabled');
-        $("#button_pass").attr('disabled', 'disabled');
-        $("#button_white").attr('disabled', 'disabled');
+        $("#button_ready_play").hide();
+        $("#button_ready_white").hide();
+        $("#button_ready_owner").hide();
+        $("#button_cancel").hide();
+        $("#button_pass").hide();
+        $("#button_white").hide();
         $("#button_logout").hide();
         $("#menu_online").show();
     }
