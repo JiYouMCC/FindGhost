@@ -4,7 +4,13 @@ var findghost = {
     showMessageCount: 512,
     MESSAGE_TYPE: {
         SYSTEM: "系统消息",
-        CHAT: "聊天消息"
+        CHAT: "聊天消息",
+        GAME: "游戏消息"
+    },
+    GAME_ROLE: {
+        PLAYER: "玩家",
+        WHITE: "小白",
+        OWNER: "法官"
     },
     init: function() {
         var config = {
@@ -24,6 +30,9 @@ var findghost = {
         while (currentDate) {
             return currentDate;
         }
+    },
+    formatDate: function(date) {
+        return ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " ";
     },
     user: {
         getCurrentUser: function() {
@@ -100,6 +109,7 @@ var findghost = {
     },
     hall: {
         out: function(uid, displayName) {
+            findghost.game.outOfGame(uid,displayName);
             wilddog.sync().ref("/hall/users/" + uid).remove();
             findghost.hall.sendSystemMessage("“" + displayName + "”" + "离开了");
         },
@@ -151,6 +161,78 @@ var findghost = {
         },
         sendSystemMessage: function(message, callback) {
             this.sendMessage("", "", message, findghost.MESSAGE_TYPE.SYSTEM, callback);
+        },
+        sendGameMessage: function(message, callback) {
+            this.sendMessage("", "", message, findghost.MESSAGE_TYPE.GAME, callback);
         }
+    },
+    game: {
+        readyToPlay: function() {
+            var user = findghost.user.getCurrentUser();
+            if (user) {
+                var uid = user.uid;
+                var date = findghost.getCurrentDate();
+                var displayName = findghost.user.getDisplayName();
+                if (date) {
+                    wilddog.sync().ref("/game/users/").child(uid).set({
+                        "displayName": displayName,
+                        "date": date,
+                        "role": findghost.GAME_ROLE.PLAYER
+                    }).then(function() {
+                        findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
+                    });
+                }
+            }
+        },
+        readyToWhite: function() {
+            var user = findghost.user.getCurrentUser();
+            if (user) {
+                var uid = user.uid;
+                var date = findghost.getCurrentDate();
+                var displayName = findghost.user.getDisplayName();
+                if (date) {
+                    wilddog.sync().ref("/game/users/").child(uid).set({
+                        "displayName": displayName,
+                        "date": date,
+                        "role": findghost.GAME_ROLE.WHITE
+                    }).then(function() {
+                        findghost.hall.sendGameMessage("“" + displayName + "”" + "要当小白");
+                    });
+                }
+            }
+        },
+        readyToOwner(manWord,ghostWord) {
+            var user = findghost.user.getCurrentUser();
+            if (user) {
+                var uid = user.uid;
+                var date = findghost.getCurrentDate();
+                var displayName = findghost.user.getDisplayName();
+                if (date) {
+                    wilddog.sync().ref("/game/users/").child(uid).set({
+                        "displayName": displayName,
+                        "date": date,
+                        "role": findghost.GAME_ROLE.OWNER
+                    }).then(function() {
+                        findghost.hall.sendGameMessage("“" + displayName + "”" + "已经提交了词，要当法官");
+                    });
+                }
+            }
+        },
+        outOfGame(uid, displayName) {
+            if (!uid || !displayName) {
+                var user = findghost.user.getCurrentUser();
+                if (user) {
+                    uid = user.uid;
+                    displayName = findghost.user.getDisplayName();
+                }
+            }
+            if (uid && displayName) {
+                wilddog.sync().ref("/game/users/" + uid).remove();
+                findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
+            }
+        },
+        updateUserCallback: function(callback) {
+            wilddog.sync().ref("/game/users").on("value", callback);
+        },
     }
 }
