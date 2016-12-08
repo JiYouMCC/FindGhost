@@ -265,7 +265,21 @@ var findghost = {
             });
         },
         getStatus: function(callback) {
-            wilddog.sync().ref("/game/status").once('value', callback);
+            wilddog.sync().ref("/game/status").once('value', function(snapshot) {
+                var result = snapshot.val();
+                callback(result);
+            });
+        },
+        getRole: function(callback) {
+            var user = findghost.user.getCurrentUser();
+            if (user) {
+                wilddog.sync().ref("/game/users/" + user.uid).once("value", function(snapshot) {
+                    var result = snapshot.val();
+                    if (result) {
+                        callback(result.role);
+                    }
+                })
+            }
         },
         getWord: function(callback) {
             //TODO

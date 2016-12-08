@@ -71,22 +71,10 @@ findghost.hall.updateMessageCallback(function(snapshot) {
 });
 findghost.user.updateCallback(function() {
     var user = findghost.user.getCurrentUser();
-    if (user) {
-        findghost.hall.in(user.uid, findghost.user.getDisplayName());
-        $("#button_login").button('reset');
-        $("#button_register").button('reset');
-        $('#modal_login').modal('hide');
-        $('#modal_register').modal('hide');
-        $("#button_logout").show();
-        $("#menu_online").hide();
-        $("#chat").removeAttr('disabled');
-        $("#button_chat").removeAttr('disabled');
-    } else {
-        $("#chat").attr('disabled', 'disabled');
-        $("#button_chat").attr('disabled', 'disabled');
-        $("#button_logout").hide();
-        $("#menu_online").show();
-    }
+    findghost.game.getStatus(function(gameStatus) {
+        formStatusSetting(user, undefined, gameStatus);
+    });
+
 });
 findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
@@ -108,6 +96,44 @@ findghost.game.updateStatusCallback(function(status) {
     $("#span_game_status").text(status);
 });
 
+function formStatusSetting(user, gameRole, gameStatus) {
+    if (user) {
+        findghost.hall.in(user.uid, findghost.user.getDisplayName());
+        $("#button_login").button('reset');
+        $("#button_register").button('reset');
+        $('#modal_login').modal('hide');
+        $('#modal_register').modal('hide');
+        $("#button_logout").show();
+        $("#menu_online").hide();
+        $("#chat").removeAttr('disabled');
+        $("#button_chat").removeAttr('disabled');
+        if (gameStatus) {
+            switch (gameStatus) {
+                case findghost.GAME_STATUS.ONGOING:
+                    break;
+                case findghost.GAME_STATUS.NOT_START:
+                case findghost.GAME_STATUS.READY:
+                    if (gameRole) {
+                        switch (gameRole) {}
+                    } else {
+                        $("#button_ready_play").removeAttr('disabled');
+                        $("#button_ready_white").removeAttr('disabled');
+                    }
+            }
+        }
+    } else {
+        $("#chat").attr('disabled', 'disabled');
+        $("#button_chat").attr('disabled', 'disabled');
+        $("#button_ready_play").attr('disabled', 'disabled');
+        $("#button_ready_white").attr('disabled', 'disabled');
+        $("#button_ready_owner").attr('disabled', 'disabled');
+        $("#button_cancel").attr('disabled', 'disabled');
+        $("#button_pass").attr('disabled', 'disabled');
+        $("#button_white").attr('disabled', 'disabled');
+        $("#button_logout").hide();
+        $("#menu_online").show();
+    }
+};
 $("#button_register").click(function() {
     var email = $("#register_email").val();
     var password = $("#register_password").val();
