@@ -114,7 +114,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
                 case findghost.GAME_STATUS.NOT_START:
                 case findghost.GAME_STATUS.READY:
                     if (gameRole) {
-                        switch (gameRole) {}
+                        $("#button_cancel").removeAttr('disabled');
                     } else {
                         $("#button_ready_play").removeAttr('disabled');
                         $("#button_ready_white").removeAttr('disabled');
