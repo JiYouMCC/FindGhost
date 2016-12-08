@@ -79,27 +79,30 @@ findghost.user.updateCallback(function() {
         $('#modal_register').modal('hide');
         $("#button_logout").show();
         $("#menu_online").hide();
+        $("#chat").removeAttr('disabled');
+        $("#button_chat").removeAttr('disabled');
     } else {
+        $("#chat").attr('disabled', 'disabled');
+        $("#button_chat").attr('disabled', 'disabled');
         $("#button_logout").hide();
         $("#menu_online").show();
     }
 });
 findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
-    if (users) {
-        var count = 0;
-        for (uid in users) {
-            var displayName = users[uid].displayName;
-            var role = users[uid].role
-            $("#gamer_list").append(
-                $("<li></li>").addClass("list-group-item").text(displayName).append(
-                    $("<span></span>").addClass("badge").text(role)
-                )
-            );
-            count+=1;
-        }
-        $("#gamer_count").text(count);
+    var count = 0;
+    for (uid in users) {
+        var displayName = users[uid].displayName;
+        var role = users[uid].role
+        $("#gamer_list").append(
+            $("<li></li>").addClass("list-group-item").text(displayName).append(
+                $("<span></span>").addClass("badge").text(role)
+            )
+        );
+        count += 1;
     }
+
+    $("#gamer_count").text(count);
 });
 findghost.game.updateStatusCallback(function(status) {
     $("#span_game_status").text(status);
@@ -167,5 +170,10 @@ $("#button_ready_white").click(function() {
     findghost.game.readyToWhite();
 });
 $("#button_ready_owner").click(function() {
-    findghost.game.readyToOwner("1", "2");
+    $("#modal_owner").modal('show');
+    //findghost.game.readyToOwner("1", "2");
+});
+$("#button_white").click(function() {
+    $("#modal_white").modal('show');
+    //findghost.game.readyToOwner("1", "2");
 });
