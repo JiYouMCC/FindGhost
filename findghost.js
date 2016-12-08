@@ -17,6 +17,11 @@ var findghost = {
         READY: "准备中",
         ONGOING: "进行中"
     },
+    CAMP: {
+        MAN: "人",
+        GHOST: "鬼",
+        WHITE: "小白"
+    },
     init: function() {
         var config = {
             authDomain: this.appid + ".wilddog.com",
@@ -176,18 +181,14 @@ var findghost = {
             var user = findghost.user.getCurrentUser();
             if (user) {
                 var uid = user.uid;
-                var date = findghost.getCurrentDate();
                 var displayName = findghost.user.getDisplayName();
-                if (date) {
-                    wilddog.sync().ref("/game/users/").child(uid).set({
-                        "displayName": displayName,
-                        "date": date,
-                        "role": findghost.GAME_ROLE.PLAYER
-                    }).then(function() {
-                        findghost.game.setStatus(findghost.GAME_STATUS.READY);
-                        findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
-                    });
-                }
+                wilddog.sync().ref("/game/users/").child(uid).set({
+                    "displayName": displayName,
+                    "role": findghost.GAME_ROLE.PLAYER
+                }).then(function() {
+                    findghost.game.setStatus(findghost.GAME_STATUS.READY);
+                    findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
+                });
             }
         },
         readyToWhite: function() {
@@ -233,14 +234,20 @@ var findghost = {
                 }
             }
             if (uid && displayName) {
-                wilddog.sync().ref("/game/users/" + uid).remove();
-                findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
-                wilddog.sync().ref("/game/users").once("value", function(snapshot) {
-                    var users = snapshot.val();
-                    if (!users) {
-                        findghost.game.setStatus(findghost.GAME_STATUS.NOT_START);
+                wilddog.sync().ref("/game/users/" + uid).once('value', function(snapshot) {
+                    var result = snapshot.val();
+                    if (result) {
+                        wilddog.sync().ref("/game/users/" + uid).remove();
+                        findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
+                        wilddog.sync().ref("/game/users").once("value", function(snapshot) {
+                            var users = snapshot.val();
+                            if (!users) {
+                                findghost.game.setStatus(findghost.GAME_STATUS.NOT_START);
+                            }
+                        });
                     }
-                });
+                })
+
             }
         },
         setStatus: function(status) {
@@ -259,6 +266,25 @@ var findghost = {
         },
         getStatus: function(callback) {
             wilddog.sync().ref("/game/status").once('value', callback);
+        },
+        getWord: function(callback) {
+            //TODO
+        },
+        hasOwner: function(callback) {
+            //TODO
+        },
+        createCamp: function(callback) {
+            //TODO
+        },
+        getUsers: function(callback) {
+            //TODO
+            wilddog.sync().ref("/game/users").once('value', function(snapshot) {
+                var users = snapshot.val();
+                callback(users);
+            });
+        },
+        checkResult: function(callback) {
+            //TODO
         }
     }
 }
