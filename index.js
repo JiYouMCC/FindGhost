@@ -42,7 +42,7 @@ findghost.hall.updateMessageCallback(function(snapshot) {
         if (messageType == findghost.MESSAGE_TYPE.SYSTEM) {
             $("#messages").append(
                 $("<div></div>").addClass("text-danger").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime)+ " ").append(
+                    $("<span></span>").text(findghost.formatDate(dateTime) + " ").append(
                         $("<span></span>").text(message)
                     )
                 )
@@ -50,7 +50,7 @@ findghost.hall.updateMessageCallback(function(snapshot) {
         } else if (messageType == findghost.MESSAGE_TYPE.GAME) {
             $("#messages").append(
                 $("<div></div>").addClass("text-info").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime)+ " ")).append(
+                    $("<span></span>").text(findghost.formatDate(dateTime) + " ")).append(
                     $("<span></span>").text(message)
                 )
             );
@@ -58,7 +58,7 @@ findghost.hall.updateMessageCallback(function(snapshot) {
             var userDisplay = messages[date].displayName;
             $("#messages").append(
                 $("<div></div>").append(
-                    $("<span></span>").text(findghost.formatDate(dateTime)+ " ")
+                    $("<span></span>").text(findghost.formatDate(dateTime) + " ")
                 ).append(
                     $("<span></span>").text(userDisplay + "：")
                 ).append(
@@ -84,22 +84,27 @@ findghost.user.updateCallback(function() {
         $("#menu_online").show();
     }
 });
-findghost.game.updateUserCallback(function(snapshot) {
+findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
-    var users = snapshot.val();
-    var count = 0;
-    for (uid in users) {
-        var displayName = users[uid].displayName;
-        var role = users[uid].role
-        $("#gamer_list").append(
-            $("<li></li>").addClass("list-group-item").text(displayName).append(
-                $("<span></span>").addClass("badge").text(role)
-            )
-        );
-        count += 1;
+    if (users) {
+        var count = 0;
+        for (uid in users) {
+            var displayName = users[uid].displayName;
+            var role = users[uid].role
+            $("#gamer_list").append(
+                $("<li></li>").addClass("list-group-item").text(displayName).append(
+                    $("<span></span>").addClass("badge").text(role)
+                )
+            );
+            count+=1;
+        }
+        $("#gamer_count").text(count);
     }
-    $("#gamer_count").text(count);
 });
+findghost.game.updateStatusCallback(function(status) {
+    $("#span_game_status").text(status);
+});
+
 $("#button_register").click(function() {
     var email = $("#register_email").val();
     var password = $("#register_password").val();
@@ -162,5 +167,5 @@ $("#button_ready_white").click(function() {
     findghost.game.readyToWhite();
 });
 $("#button_ready_owner").click(function() {
-    findghost.game.readyToOwner("1","2");
+    findghost.game.readyToOwner("1", "2");
 });

@@ -12,6 +12,11 @@ var findghost = {
         WHITE: "小白",
         OWNER: "法官"
     },
+    GAME_STATUS: {
+        NOT_START: "未开始",
+        READY: "准备中",
+        ONGOING: "进行中"
+    },
     init: function() {
         var config = {
             authDomain: this.appid + ".wilddog.com",
@@ -109,7 +114,7 @@ var findghost = {
     },
     hall: {
         out: function(uid, displayName) {
-            findghost.game.outOfGame(uid,displayName);
+            findghost.game.outOfGame(uid, displayName);
             wilddog.sync().ref("/hall/users/" + uid).remove();
             findghost.hall.sendSystemMessage("“" + displayName + "”" + "离开了");
         },
@@ -179,6 +184,7 @@ var findghost = {
                         "date": date,
                         "role": findghost.GAME_ROLE.PLAYER
                     }).then(function() {
+                        findghost.game.setStatus(findghost.GAME_STATUS.READY);
                         findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
                     });
                 }
@@ -201,7 +207,7 @@ var findghost = {
                 }
             }
         },
-        readyToOwner(manWord,ghostWord) {
+        readyToOwner: function(manWord, ghostWord) {
             var user = findghost.user.getCurrentUser();
             if (user) {
                 var uid = user.uid;
@@ -218,7 +224,7 @@ var findghost = {
                 }
             }
         },
-        outOfGame(uid, displayName) {
+        outOfGame: function(uid, displayName) {
             if (!uid || !displayName) {
                 var user = findghost.user.getCurrentUser();
                 if (user) {
@@ -229,10 +235,30 @@ var findghost = {
             if (uid && displayName) {
                 wilddog.sync().ref("/game/users/" + uid).remove();
                 findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
+                wilddog.sync().ref("/game/users").once("value", function(snapshot) {
+                    var users = snapshot.val();
+                    if (!users) {
+                        findghost.game.setStatus(findghost.GAME_STATUS.NOT_START);
+                    }
+                });
             }
         },
-        updateUserCallback: function(callback) {
-            wilddog.sync().ref("/game/users").on("value", callback);
+        setStatus: function(status) {
+            wilddog.sync().ref("/game/").child("status").set(status);
         },
+        updateUserCallback: function(callback) {
+            wilddog.sync().ref("/game/users").on("value", function(snapshot) {
+                var users = snapshot.val();
+                callback(users);
+            });
+        },
+        updateStatusCallback: function(callback) {
+            wilddog.sync().ref("/game/status").on("value", function(snapshot) {
+                callback(snapshot.val());
+            });
+        },
+        getStatus: function(callback) {
+            wilddog.sync().ref("/game/status").once('value', callback);
+        }
     }
 }
