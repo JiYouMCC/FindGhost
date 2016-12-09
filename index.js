@@ -1,4 +1,8 @@
 findghost.init("findghost");
+findghost.handleError = function(error) {
+    $("#div_error").text(error);
+    $("#modal_error").modal('show');
+}
 setInterval(function() {
     findghost.hall.removeSleepUser();
 }, 10000);
@@ -56,7 +60,7 @@ findghost.user.updateCallback(function(user) {
             formStatusSetting(user, gameRole, gameStatus);
         });
     });
-    if(user) {
+    if (user) {
         findghost.game.updateRoleCallback(function(gameRole) {
             findghost.game.getStatus(function(gameStatus) {
                 formStatusSetting(user, gameRole, gameStatus);
@@ -140,8 +144,10 @@ $("#button_register").click(function() {
     }
     findghost.user.register(email, password, function(user) {
         $("#button_register").button('reset');
-        $("#menu_update_display_name").text(findghost.user.getDisplayName());
-        $("#modal_register").modal('hide');
+        if (user) {
+            $("#menu_update_display_name").text(findghost.user.getDisplayName());
+            $("#modal_register").modal('hide');
+        }
     });
 });
 $("#menu_logout").click(function() {
@@ -166,7 +172,9 @@ $("#button_login").click(function() {
     $("#button_login").button('loading');
     var email = $("#login_email").val();
     var password = $("#login_password").val();
-    findghost.user.login(email, password);
+    findghost.user.login(email, password, function() {
+        $("#button_login").button('reset');
+    });
 });
 $("#button_update_display_name").click(function() {
     $("#button_update").button('loading');
@@ -193,9 +201,18 @@ $("#button_ready_white").click(function() {
 });
 $("#button_ready_owner").click(function() {
     $("#modal_owner").modal('show');
-    //findghost.game.readyToOwner("1", "2");
+});
+$("#button_owner_commit").click(function() {
+    var manWord = $("#word_man").val();
+    var ghostWord = $("#word_ghost").val();
+    if (manWord && ghostWord) {
+        findghost.game.readyToOwner(manWord, ghostWord, function(result){
+            if (result) {
+                $("#modal_owner").modal('hide');
+            }
+        });
+    }
 });
 $("#button_white").click(function() {
     $("#modal_white").modal('show');
-    //findghost.game.readyToOwner("1", "2");
 });

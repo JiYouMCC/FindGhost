@@ -67,21 +67,24 @@ var findghost = {
                     callback(user);
                 }).catch(function(error) {
                     findghost.handleError(error);
+                    callback(undefined);
                 });
             }
         },
-        login: function(email, password) {
+        login: function(email, password, callback) {
             var user = this.getCurrentUser();
             if (!user) {
                 wilddog.auth().signInWithEmailAndPassword(email, password).then(function(user) {
                     findghost.hall.sendSystemMessage("“" + user.displayName + "”" + "回来了");
+                    callback(user);
                 }).catch(function(error) {
                     findghost.handleError(error);
+                    callback(undefined);
                 });
             }
         },
         logout: function() {
-            var user = this.getCurrentUser();
+            var user = findghost.user.getCurrentUser();
             if (user) {
                 wilddog.auth().signOut().catch(function(error) {
                     findghost.handleError(error);
@@ -105,6 +108,7 @@ var findghost = {
                     callback(user);
                 }).catch(function(error) {
                     findghost.handleError(error);
+                    callback(undefined);
                 });
             }
         },
@@ -180,17 +184,23 @@ var findghost = {
             }).then(callback);
         },
         readyToPlay: function() {
+            // 在准备中或未开始状态下，登录用户可以提出加入游戏
             var user = findghost.user.getCurrentUser();
             if (user) {
-                var uid = user.uid;
-                var displayName = findghost.user.getDisplayName();
-                findghost.game.attendGame(uid, displayName, findghost.GAME_ROLE.PLAYER, function() {
-                    findghost.game.setStatus(findghost.GAME_STATUS.READY);
-                    findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
+                findghost.game.getStatus(function(status) {
+                    if (status == findghost.GAME_STATUS.NOT_START || status == findghost.GAME_STATUS.READY) {
+                        var uid = user.uid;
+                        var displayName = findghost.user.getDisplayName();
+                        findghost.game.attendGame(uid, displayName, findghost.GAME_ROLE.PLAYER, function() {
+                            findghost.game.setStatus(findghost.GAME_STATUS.READY);
+                            findghost.hall.sendGameMessage("“" + displayName + "”" + "要抓鬼");
+                        });
+                    }
                 });
             }
         },
         readyToWhite: function() {
+            // 任何时候登录用户都可以提出当小白
             var user = findghost.user.getCurrentUser();
             if (user) {
                 var uid = user.uid;
@@ -201,17 +211,30 @@ var findghost = {
                 });
             }
         },
-        readyToOwner: function(manWord, ghostWord) {
+        readyToOwner: function(manWord, ghostWord, callback) {
+            // 在准备中或未开始状态下，在没有法官的情况下，登录用户可以提出当法官
             var user = findghost.user.getCurrentUser();
             if (user) {
-                var uid = user.uid;
-                var displayName = findghost.user.getDisplayName();
-
-                findghost.game.attendGame(uid, displayName, findghost.GAME_ROLE.OWNER, function() {
-                    findghost.game.setStatus(findghost.GAME_STATUS.READY);
-                    findghost.hall.sendGameMessage("“" + displayName + "”" + "已经提交了词，要当法官");
-                });
+                findghost.game.getOwner(function(ownerInfo) {
+                    if (!ownerInfo) {
+                        var uid = user.uid;
+                        var displayName = findghost.user.getDisplayName();
+                        findghost.game.attendGame(uid, displayName, findghost.GAME_ROLE.OWNER, function() {
+                            findghost.game.setOwner(uid, displayName, function() {
+                                findghost.game.setWords(manWord, ghostWord, function() {
+                                    findghost.game.setStatus(findghost.GAME_STATUS.READY);
+                                    findghost.hall.sendGameMessage("“" + displayName + "”" + "已经提交了词，要当法官");
+                                    callback(true);
+                                });
+                            });
+                        });
+                    } else {
+                        findghost.handleError("已经有法官了!");
+                        callback(false);
+                    }
+                })
             }
+            callback(false);
         },
         outOfGame: function(uid, displayName) {
             if (!uid || !displayName) {
@@ -225,6 +248,16 @@ var findghost = {
                 wilddog.sync().ref("/game/users/" + uid).once('value', function(snapshot) {
                     var result = snapshot.val();
                     if (result) {
+                        findghost.game.getOwner(function(ownerInfo) {
+                            if(ownerInfo) {
+                                if (ownerInfo.uid == uid) {
+                                    findghost.game.removeOwner(function() {
+                                        findghost.hall.sendGameMessage("“" + displayName + "”" + "不当法官了");
+                                        findghost.game.removeWords(function(){});
+                                    });
+                                }
+                            }
+                        });
                         wilddog.sync().ref("/game/users/" + uid).remove();
                         findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
                         wilddog.sync().ref("/game/users").once("value", function(snapshot) {
@@ -290,8 +323,8 @@ var findghost = {
         },
         getWords: function(callback) {
             //TODO
-            findghost.game.getRole(function(gameRole){
-                switch(gameRole){
+            findghost.game.getRole(function(gameRole) {
+                switch (gameRole) {
                     case undefined:
                     case findghost.GAME_ROLE.WHITE:
                         callback(undefined);
@@ -302,9 +335,32 @@ var findghost = {
                 }
             });
         },
-        hasOwner: function(callback) {
-            //TODO
-            //return if have owner
+        setOwner: function(uid, displayName, callback) {
+            // 设置法官
+            wilddog.sync().ref("/game/").child("owner").set({
+                uid: uid,
+                displayName: displayName
+            }).then(callback);
+        },
+        removeOwner: function(callback) {
+            wilddog.sync().ref("/game/owner").remove();
+            callback();
+        },
+        setWords: function(manWord, ghostWord, callback) {
+            wilddog.sync().ref("/game/").child("words").set({
+                manWord: manWord,
+                ghostWord: ghostWord
+            }).then(callback);
+        },
+        removeWords: function(callback) {
+            wilddog.sync().ref("/game/words").remove();
+            callback();
+        },
+        getOwner: function(callback) {
+            // 获取法官
+            wilddog.sync().ref("/game/owner/").once("value", function(snapshot) {
+                callback(snapshot.val());
+            });
         },
         createCamp: function(callback) {
             //TODO
