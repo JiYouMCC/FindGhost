@@ -249,11 +249,11 @@ var findghost = {
                     var result = snapshot.val();
                     if (result) {
                         findghost.game.getOwner(function(ownerInfo) {
-                            if(ownerInfo) {
+                            if (ownerInfo) {
                                 if (ownerInfo.uid == uid) {
                                     findghost.game.removeOwner(function() {
                                         findghost.hall.sendGameMessage("“" + displayName + "”" + "不当法官了");
-                                        findghost.game.removeWords(function(){});
+                                        findghost.game.removeWords(function() {});
                                     });
                                 }
                             }
@@ -287,7 +287,7 @@ var findghost = {
         updateRoleCallback: function(callback) {
             var user = findghost.user.getCurrentUser();
             if (user) {
-                findghost.game.roleListener = wilddog.sync().ref("/game/user/" + user.uid + "/role");
+                findghost.game.roleListener = wilddog.sync().ref("/game/users/" + user.uid + "/role");
                 findghost.game.roleListener.on("value", function(snapshot) {
                     callback(snapshot.val());
                 });
@@ -322,18 +322,49 @@ var findghost = {
             }
         },
         getWords: function(callback) {
-            //TODO
             findghost.game.getRole(function(gameRole) {
                 switch (gameRole) {
                     case undefined:
                     case findghost.GAME_ROLE.WHITE:
                         callback(undefined);
+                        break;
                     case findghost.GAME_ROLE.PLAYER:
-                        //give word by camp
+                        findghost.game.getCamp(function(camp) {
+                            switch (camp) {
+                                case findghost.CAMP.GHOST:
+                                    wilddog.sync().ref("/game/words/ghost").once('value', function(snapshot) {
+                                        callback(snapshot.val());
+                                    });
+                                    return
+                                case findghost.CAMP.MAN:
+                                    wilddog.sync().ref("/game/words/man").once('value', function(snapshot) {
+                                        callback(snapshot.val());
+                                    });
+                                    return
+                                case findghost.CAMP.GHOST:
+                                default:
+                                    callback(undefined);
+                                    return
+                            }
+                        });
+                        break;
                     case findghost.GAME_ROLE.OWNER:
-                        // give all words
+                        wilddog.sync().ref("/game/words/").once('value', function(snapshot) {
+                            callback(snapshot.val());
+                        });
+                        break;
                 }
             });
+        },
+        getCamp: function(callback) {
+            var user = findghost.user.getCurrentUser();
+            if (user) {
+                wilddog.sync().ref("/game/camp/" + user.uid).once('value', function(snapshot) {
+                    var result = snapshot.val();
+                    callback(result);
+                });
+            }
+            callback(undefined);
         },
         setOwner: function(uid, displayName, callback) {
             // 设置法官

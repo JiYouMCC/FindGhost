@@ -1,11 +1,14 @@
 findghost.init("findghost");
+// 重载错误处理
 findghost.handleError = function(error) {
-    $("#div_error").text(error);
-    $("#modal_error").modal('show');
-}
+        $("#div_error").text(error);
+        $("#modal_error").modal('show');
+    }
+    // 10秒清理睡觉用户
 setInterval(function() {
     findghost.hall.removeSleepUser();
 }, 10000);
+// 心跳
 setInterval(function() {
     var user = findghost.user.getCurrentUser();
     if (user) {
@@ -13,6 +16,7 @@ setInterval(function() {
         $("#menu_update_display_name").text(findghost.user.getDisplayName());
     }
 }, 1000);
+// UI
 $(window).resize(function() {
     $("#left_pannel").height(window.innerHeight - 94);
     $("#messages").height(window.innerHeight - 265);
@@ -20,11 +24,13 @@ $(window).resize(function() {
 $(window).load(function() {
     $(window).resize();
 });
+// 文字栏回车
 $("#chat").keydown(function(event) {
     if (event.keyCode == 13) {
         $("#button_chat").click();
     }
 });
+// 更新在线列表
 findghost.hall.updateUserCallback(function(snapshot) {
     $("#user_list").text("");
     var users = snapshot.val();
@@ -36,6 +42,7 @@ findghost.hall.updateUserCallback(function(snapshot) {
     }
     $("#online_count").text(count);
 });
+// 更新消息栏
 findghost.hall.updateMessageCallback(function(snapshot) {
     $("#messages").text("");
     var messages = snapshot.val();
@@ -54,6 +61,7 @@ findghost.hall.updateMessageCallback(function(snapshot) {
     };
     $("#messages").scrollTop($("#messages").prop("scrollHeight"));
 });
+// 触发登录登出
 findghost.user.updateCallback(function(user) {
     findghost.game.getStatus(function(gameStatus) {
         findghost.game.getRole(function(gameRole) {
@@ -61,6 +69,7 @@ findghost.user.updateCallback(function(user) {
         });
     });
     if (user) {
+        // 设定游戏角色触发器
         findghost.game.updateRoleCallback(function(gameRole) {
             findghost.game.getStatus(function(gameStatus) {
                 formStatusSetting(user, gameRole, gameStatus);
@@ -68,8 +77,12 @@ findghost.user.updateCallback(function(user) {
         })
     } else {
         findghost.game.removeRoleCallback();
+        findghost.game.getStatus(function(gameStatus) {
+            formStatusSetting(user, undefined, gameStatus);
+        });
     }
 });
+// 更新在线玩家
 findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
     var count = 0;
@@ -206,7 +219,7 @@ $("#button_owner_commit").click(function() {
     var manWord = $("#word_man").val();
     var ghostWord = $("#word_ghost").val();
     if (manWord && ghostWord) {
-        findghost.game.readyToOwner(manWord, ghostWord, function(result){
+        findghost.game.readyToOwner(manWord, ghostWord, function(result) {
             if (result) {
                 $("#modal_owner").modal('hide');
             }
