@@ -1,14 +1,18 @@
+// init wilddog
 findghost.init("findghost");
-// 重载错误处理
+
+// override error handler
 findghost.handleError = function(error) {
-        $("#div_error").text(error);
-        $("#modal_error").modal('show');
-    }
-    // 10秒清理睡觉用户
+    $("#div_error").text(error);
+    $("#modal_error").modal('show');
+}
+
+// clean sleeping user per 10 secs
 setInterval(function() {
     findghost.hall.removeSleepUser();
 }, 10000);
-// 心跳
+
+// heartbreak
 setInterval(function() {
     var user = findghost.user.getCurrentUser();
     if (user) {
@@ -16,7 +20,8 @@ setInterval(function() {
         $("#menu_update_display_name").text(findghost.user.getDisplayName());
     }
 }, 1000);
-// UI
+
+// chat windows height setting
 $(window).resize(function() {
     $("#left_pannel").height(window.innerHeight - 94);
     $("#messages").height(window.innerHeight - 265);
@@ -24,13 +29,15 @@ $(window).resize(function() {
 $(window).load(function() {
     $(window).resize();
 });
-// 文字栏回车
+
+// chat input enter event
 $("#chat").keydown(function(event) {
     if (event.keyCode == 13) {
         $("#button_chat").click();
     }
 });
-// 更新在线列表
+
+// online user listener
 findghost.hall.updateUserCallback(function(snapshot) {
     $("#user_list").text("");
     var users = snapshot.val();
@@ -42,7 +49,8 @@ findghost.hall.updateUserCallback(function(snapshot) {
     }
     $("#online_count").text(count);
 });
-// 更新消息栏
+
+// message listener
 findghost.hall.updateMessageCallback(function(snapshot) {
     $("#messages").text("");
     var messages = snapshot.val();
@@ -61,7 +69,8 @@ findghost.hall.updateMessageCallback(function(snapshot) {
     };
     $("#messages").scrollTop($("#messages").prop("scrollHeight"));
 });
-// 触发登录登出
+
+// login/logout listener
 findghost.user.updateCallback(function(user) {
     findghost.game.getStatus(function(gameStatus) {
         findghost.game.getRole(function(gameRole) {
@@ -69,7 +78,7 @@ findghost.user.updateCallback(function(user) {
         });
     });
     if (user) {
-        // 设定游戏角色触发器
+        // set game role listener
         findghost.game.updateRoleCallback(function(gameRole) {
             findghost.game.getStatus(function(gameStatus) {
                 formStatusSetting(user, gameRole, gameStatus);
@@ -82,7 +91,8 @@ findghost.user.updateCallback(function(user) {
         });
     }
 });
-// 更新在线玩家
+
+// gamer listener
 findghost.game.updateUserCallback(function(users) {
     $("#gamer_list").text("");
     var count = 0;
@@ -94,6 +104,8 @@ findghost.game.updateUserCallback(function(users) {
     }
     $("#gamer_count").text(count);
 });
+
+// game status listener
 findghost.game.updateStatusCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
     var user = findghost.user.getCurrentUser();
@@ -101,6 +113,7 @@ findghost.game.updateStatusCallback(function(gameStatus) {
         formStatusSetting(user, gameRole, gameStatus);
     });
 });
+
 
 function formStatusSetting(user, gameRole, gameStatus) {
     if (user) {
@@ -124,11 +137,17 @@ function formStatusSetting(user, gameRole, gameStatus) {
                         $("#button_ready_play").hide();
                         $("#button_ready_white").hide();
                         $("#button_ready_owner").hide();
+                        if (gameStatus == findghost.GAME_STATUS.READY && gameRole == findghost.GAME_ROLE.OWNER) {
+                            $("#button_start").show();
+                        } else {
+                            $("#button_start").hide();
+                        }
                     } else {
                         $("#button_ready_play").show();
                         $("#button_ready_white").show();
                         $("#button_ready_owner").show();
                         $("#button_cancel").hide();
+                        $("#button_start").hide();
                     }
                     $("#button_pass").hide();
                     $("#button_white").hide();
@@ -140,6 +159,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
         $("#button_ready_play").hide();
         $("#button_ready_white").hide();
         $("#button_ready_owner").hide();
+        $("#button_start").hide();
         $("#button_cancel").hide();
         $("#button_pass").hide();
         $("#button_white").hide();
@@ -147,6 +167,8 @@ function formStatusSetting(user, gameRole, gameStatus) {
         $("#menu_online").show();
     }
 };
+
+
 $("#button_register").click(function() {
     var email = $("#register_email").val();
     var password = $("#register_password").val();
@@ -163,24 +185,34 @@ $("#button_register").click(function() {
         }
     });
 });
+
+
 $("#menu_logout").click(function() {
     findghost.hall.out(findghost.user.getUid(), findghost.user.getDisplayName());
     findghost.user.logout();
 });
+
+
 $("#menu_update_display_name").click(function() {
     $("#display_name").val(findghost.user.getDisplayName());
     $("#modal_update").modal('show');
 });
+
+
 $("#menu_register").click(function() {
     if (!findghost.user.getCurrentUser()) {
         $("#modal_register").modal('show');
     }
 });
+
+
 $("#menu_login").click(function() {
     if (!findghost.user.getCurrentUser()) {
         $("#modal_login").modal('show');
     }
 });
+
+
 $("#button_login").click(function() {
     $("#button_login").button('loading');
     var email = $("#login_email").val();
@@ -189,6 +221,7 @@ $("#button_login").click(function() {
         $("#button_login").button('reset');
     });
 });
+
 $("#button_update_display_name").click(function() {
     $("#button_update").button('loading');
     findghost.user.setDisplayName($("#display_name").val(), function() {
@@ -197,24 +230,30 @@ $("#button_update_display_name").click(function() {
         $('#modal_update').modal('hide');
     });
 });
+
 $("#button_chat").click(function() {
     findghost.hall.chat($("#chat").val(), function() {
         $("#chat").val("");
         $("#chat").focus();
     });
 });
+
 $("#button_ready_play").click(function() {
     findghost.game.readyToPlay();
 });
+
 $("#button_cancel").click(function() {
     findghost.game.outOfGame();
 });
+
 $("#button_ready_white").click(function() {
     findghost.game.readyToWhite();
 });
+
 $("#button_ready_owner").click(function() {
     $("#modal_owner").modal('show');
 });
+
 $("#button_owner_commit").click(function() {
     var manWord = $("#word_man").val();
     var ghostWord = $("#word_ghost").val();
@@ -226,6 +265,71 @@ $("#button_owner_commit").click(function() {
         });
     }
 });
+
 $("#button_white").click(function() {
     $("#modal_white").modal('show');
+});
+
+
+$("#button_start").click(function() {
+    findghost.game.getStatus(function(gameStatus) {
+        if (gameStatus && gameStatus == findghost.GAME_STATUS.READY) {
+            findghost.game.getRole(function(gameRole) {
+                if (gameRole && gameRole == findghost.GAME_ROLE.OWNER) {
+                    findghost.game.getWords(function(words) {
+                        if (words) {
+                            var manWord = words.manWord;
+                            var ghostWord = words.ghostWord;
+                            if (manWord && ghostWord) {
+                                $("#span_start_man_word").text(manWord);
+                                $("#span_start_ghost_word").text(ghostWord);
+                                findghost.game.getPlayers(function(players) {
+                                    var player_count = 0;
+                                    if (players) {
+                                        $("#span_start_player_list").text();
+                                        var users_str = "";
+                                        for (uid in players) {
+                                            if (player_count > 0) {
+                                                users_str += "，"
+                                            }
+                                            users_str += players[uid].displayName;
+                                            player_count += 1
+                                        }
+                                        $("#span_start_player_list").text(users_str);
+                                    }
+                                    if (player_count < 3) {
+                                        $("#button_start_confirm").attr('disabled', 'disabled');
+                                        $("#span_man_count").text(0);
+                                        $("#span_ghost_count").text(0);
+                                    } else {
+                                        $("#button_start_confirm").removeAttr("disabled");
+                                        var ghost_count = Math.floor(player_count * 0.4);
+                                        var man_count = player_count - ghost_count;
+                                        $("#span_man_count").text(man_count);
+                                        $("#span_ghost_count").text(ghost_count);
+                                    }
+                                });
+                                findghost.game.getWhites(function(whites) {
+                                    if (whites) {
+                                        $("#span_start_white_list").text();
+                                        var white_str = "";
+                                        var white_count = 0;
+                                        for (uid in whites) {
+                                            if (white_count > 0) {
+                                                white_str += "，"
+                                            }
+                                            white_str += whites[uid].displayName;
+                                            white_count += 1
+                                        }
+                                    }
+                                    $("#span_start_white_list").text(white_str);
+                                });
+                                $("#modal_start").modal('show');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
 });

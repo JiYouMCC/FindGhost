@@ -394,8 +394,7 @@ var findghost = {
             });
         },
         createCamp: function(callback) {
-            //TODO
-            // tragger when owner start game
+ 
         },
         getUsers: function(callback) {
             wilddog.sync().ref("/game/users").once('value', function(snapshot) {
@@ -404,6 +403,16 @@ var findghost = {
         },
         checkResult: function(callback) {
             //TODO
+        },
+        getPlayers: function(callback) {
+            wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.PLAYER).once('value', function(snapshot) {
+                callback(snapshot.val());
+            });
+        },
+        getWhites: function(callback) {
+            wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.WHITE).once('value', function(snapshot) {
+                callback(snapshot.val());
+            });
         }
     }
 }
