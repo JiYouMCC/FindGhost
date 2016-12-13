@@ -130,6 +130,23 @@ function formStatusSetting(user, gameRole, gameStatus) {
             switch (gameStatus) {
                 case findghost.GAME_STATUS.ONGOING:
                     $("#modal_start").modal('hide');
+                    $("#button_ready_play").hide();
+                    $("#button_ready_owner").hide();
+                    $("#button_cancel").hide();
+                    $("#button_start").hide();
+                    $("#button_white").hide();
+                    $("#button_pass").hide();
+                    $("#button_ready_white").hide();
+                    if (gameRole) {
+                        if (gameRole == findghost.GAME_ROLE.PLAYER) {
+                            $("#button_pass").show();
+                        } else if (gameRole == findghost.GAME_ROLE.WHITE) {
+                            $("#button_white").show();
+                        }
+                    } else {
+                        $("#button_ready_white").show();
+                    }
+                    
                     break;
                 case findghost.GAME_STATUS.NOT_START:
                 case findghost.GAME_STATUS.READY:
