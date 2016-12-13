@@ -9,15 +9,15 @@ findghost.handleError = function(error) {
 
 // clean sleeping user per 10 secs
 setInterval(function() {
-    findghost.hall.removeSleepUser();
+    findghost.hall.user.clear();
 }, 10000);
 
 // heartbreak
 setInterval(function() {
-    var user = findghost.user.getCurrentUser();
+    var user = findghost.user.get();
     if (user) {
-        findghost.hall.in(findghost.user.getUid(), findghost.user.getDisplayName());
-        $("#menu_update_display_name").text(findghost.user.getDisplayName());
+        findghost.hall.in(findghost.user.uid.get(), findghost.user.displayName.get());
+        $("#menu_update_display_name").text(findghost.user.displayName.get());
     }
 }, 1000);
 
@@ -38,7 +38,7 @@ $("#chat").keydown(function(event) {
 });
 
 // online user listener
-findghost.hall.updateUserCallback(function(snapshot) {
+findghost.hall.user.updateCallback(function(snapshot) {
     $("#user_list").text("");
     var users = snapshot.val();
     var count = 0;
@@ -51,7 +51,7 @@ findghost.hall.updateUserCallback(function(snapshot) {
 });
 
 // message listener
-findghost.hall.updateMessageCallback(function(snapshot) {
+findghost.hall.message.updateCallback((function(snapshot) {
     $("#messages").text("");
     var messages = snapshot.val();
     for (date in messages) {
@@ -108,7 +108,7 @@ findghost.game.updateUserCallback(function(users) {
 // game status listener
 findghost.game.updateStatusCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
-    var user = findghost.user.getCurrentUser();
+    var user = findghost.user.get();
     findghost.game.getRole(function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
@@ -118,7 +118,7 @@ findghost.game.updateStatusCallback(function(gameStatus) {
 function formStatusSetting(user, gameRole, gameStatus) {
     $("#span_word").text("");
     if (user) {
-        findghost.hall.in(user.uid, findghost.user.getDisplayName());
+        findghost.hall.in(user.uid, findghost.user.displayName.get());
         $("#button_login").button('reset');
         $("#button_register").button('reset');
         $('#modal_login').modal('hide');
@@ -205,7 +205,7 @@ $("#button_register").click(function() {
     findghost.user.register(email, password, function(user) {
         $("#button_register").button('reset');
         if (user) {
-            $("#menu_update_display_name").text(findghost.user.getDisplayName());
+            $("#menu_update_display_name").text(findghost.user.displayName.get());
             $("#modal_register").modal('hide');
         }
     });
@@ -213,26 +213,26 @@ $("#button_register").click(function() {
 
 
 $("#menu_logout").click(function() {
-    findghost.hall.out(findghost.user.getUid(), findghost.user.getDisplayName());
+    findghost.hall.out(findghost.user.uid.get(), findghost.user.displayName.get());
     findghost.user.logout();
 });
 
 
 $("#menu_update_display_name").click(function() {
-    $("#display_name").val(findghost.user.getDisplayName());
+    $("#display_name").val(findghost.user.displayName.get());
     $("#modal_update").modal('show');
 });
 
 
 $("#menu_register").click(function() {
-    if (!findghost.user.getCurrentUser()) {
+    if (!findghost.user.get()) {
         $("#modal_register").modal('show');
     }
 });
 
 
 $("#menu_login").click(function() {
-    if (!findghost.user.getCurrentUser()) {
+    if (!findghost.user.get()) {
         $("#modal_login").modal('show');
     }
 });
@@ -249,9 +249,9 @@ $("#button_login").click(function() {
 
 $("#button_update_display_name").click(function() {
     $("#button_update").button('loading');
-    findghost.user.setDisplayName($("#display_name").val(), function() {
+    findghost.user.displayName.set($("#display_name").val(), function() {
         $("#button_update").button('reset');
-        $("#menu_update_display_name").text(findghost.user.getDisplayName());
+        $("#menu_update_display_name").text(findghost.user.displayName.get());
         $('#modal_update').modal('hide');
     });
 });
