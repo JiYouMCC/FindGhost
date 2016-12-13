@@ -129,6 +129,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
         if (gameStatus) {
             switch (gameStatus) {
                 case findghost.GAME_STATUS.ONGOING:
+                    $("#modal_start").modal('hide');
                     break;
                 case findghost.GAME_STATUS.NOT_START:
                 case findghost.GAME_STATUS.READY:
@@ -334,5 +335,11 @@ $("#button_start").click(function() {
                 }
             });
         }
+    });
+});
+
+$("#button_start_confirm").click(function(){
+    findghost.game.createCamp(function(){
+        findghost.game.startRecord(function(){});
     });
 });

@@ -240,6 +240,9 @@ var findghost = {
             }
             callback(false);
         },
+        kill: function(uid) {
+            wilddog.sync().ref("/game/camp/"+uid).child(alive).set(false);
+        },
         outOfGame: function(uid, displayName) {
             if (!uid || !displayName) {
                 var user = findghost.user.getCurrentUser();
@@ -262,6 +265,14 @@ var findghost = {
                                 }
                             }
                         });
+                        findghost.game.getPlayers(function(players){
+                            if (players) {
+                                if (players.hasOwnProperty(uid)) {
+                                    findghost.hall.sendGameMessage("“" + displayName + "”" + "逃跑了");
+                                    findghost.game.kill(uid);
+                                }
+                            }
+                        })
                         wilddog.sync().ref("/game/users/" + uid).remove();
                         findghost.hall.sendGameMessage("“" + displayName + "”" + "不玩了");
                         wilddog.sync().ref("/game/users").once("value", function(snapshot) {
