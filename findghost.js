@@ -289,7 +289,7 @@ var findghost = {
             wilddog.sync().ref("/game/").child("status").set(status);
         },
         updateUserCallback: function(callback) {
-            wilddog.sync().ref("/game/users").on("value", function(snapshot) {
+            wilddog.sync().ref("/game/users").orderByChild("role").on("value", function(snapshot) {
                 var users = snapshot.val();
                 callback(users);
             });
@@ -347,12 +347,12 @@ var findghost = {
                         findghost.game.getCamp(function(camp) {
                             switch (camp) {
                                 case findghost.CAMP.GHOST:
-                                    wilddog.sync().ref("/game/words/ghost").once('value', function(snapshot) {
+                                    wilddog.sync().ref("/game/words/ghostWord").once('value', function(snapshot) {
                                         callback(snapshot.val());
                                     });
                                     return
                                 case findghost.CAMP.MAN:
-                                    wilddog.sync().ref("/game/words/man").once('value', function(snapshot) {
+                                    wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
                                         callback(snapshot.val());
                                     });
                                     return

@@ -116,6 +116,7 @@ findghost.game.updateStatusCallback(function(gameStatus) {
 
 
 function formStatusSetting(user, gameRole, gameStatus) {
+    $("#span_word").text("");
     if (user) {
         findghost.hall.in(user.uid, findghost.user.getDisplayName());
         $("#button_login").button('reset');
@@ -140,13 +141,18 @@ function formStatusSetting(user, gameRole, gameStatus) {
                     if (gameRole) {
                         if (gameRole == findghost.GAME_ROLE.PLAYER) {
                             $("#button_pass").show();
+                            findghost.game.getWords(function(word) {
+                                if (word) {
+                                    $("#span_word").text("你的词:" + word);
+                                }
+                            })
                         } else if (gameRole == findghost.GAME_ROLE.WHITE) {
                             $("#button_white").show();
                         }
                     } else {
                         $("#button_ready_white").show();
                     }
-                    
+
                     break;
                 case findghost.GAME_STATUS.NOT_START:
                 case findghost.GAME_STATUS.READY:
@@ -330,7 +336,7 @@ $("#button_start").click(function() {
                                         $("#span_ghost_count").text(ghost_count);
                                     }
                                 });
-                                whitesListener = findghost.game.updateWhitesCallback(function(whites){
+                                whitesListener = findghost.game.updateWhitesCallback(function(whites) {
                                     $("#span_start_white_list").text("");
                                     if (whites) {
                                         var white_str = "";
@@ -355,8 +361,8 @@ $("#button_start").click(function() {
     });
 });
 
-$("#button_start_confirm").click(function(){
-    findghost.game.createCamp(function(){
-        findghost.game.startRecord(function(){});
+$("#button_start_confirm").click(function() {
+    findghost.game.createCamp(function() {
+        findghost.game.startRecord(function() {});
     });
 });
