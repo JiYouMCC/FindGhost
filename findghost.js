@@ -206,7 +206,11 @@ var findghost = {
                 var uid = user.uid;
                 var displayName = findghost.user.getDisplayName();
                 findghost.game.attendGame(uid, displayName, findghost.GAME_ROLE.WHITE, function() {
-                    findghost.game.setStatus(findghost.GAME_STATUS.READY);
+                    findghost.game.getStatus(function(status) {
+                        if (status && status == findghost.GAME_STATUS.NOT_START) {
+                            findghost.game.setStatus(findghost.GAME_STATUS.READY);
+                        }
+                    })
                     findghost.hall.sendGameMessage("“" + displayName + "”" + "要当小白");
                 });
             }
@@ -359,7 +363,7 @@ var findghost = {
         getCamp: function(callback) {
             var user = findghost.user.getCurrentUser();
             if (user) {
-                wilddog.sync().ref("/game/camp/" + user.uid).once('value', function(snapshot) {
+                wilddog.sync().ref("/game/camp/" + user.uid + "/camp").once('value', function(snapshot) {
                     var result = snapshot.val();
                     callback(result);
                 });
@@ -394,7 +398,54 @@ var findghost = {
             });
         },
         createCamp: function(callback) {
- 
+            findghost.game.getPlayers(function(players) {
+                if (players) {
+                    var playerList = [];
+                    var playerCount = 0;
+                    for (uid in players) {
+                        playerCount += 1;
+                        var displayName = players[uid].displayName;
+                        playerList.push([playerCount, uid, displayName]);
+                    }
+
+                    if (playerCount >= 3) {
+                        var ghostCount = Math.floor(playerCount * 0.4);
+                        var manCount = playerCount - ghostCount;
+                        var ghostList = [];
+                        while (ghostList.length < ghostCount) {
+                            var newGhostId = Math.floor(Math.random(1) * playerCount + 1);
+                            if (ghostList && ghostList.indexOf(newGhostId) < 0) {
+                                ghostList.push(newGhostId);
+                            }
+                        }
+
+                        for (var i = 0; i < playerList.length; i++) {
+                            var index = playerList[i][0];
+                            var uid = playerList[i][1];
+                            var displayName = playerList[i][2];
+                            var camp = undefined;
+                            if (ghostList.indexOf(index) < 0) {
+                                camp = findghost.CAMP.MAN;
+                            } else {
+                                camp = findghost.CAMP.GHOST;
+                            }
+
+                            wilddog.sync().ref("/game/camp/").child(uid).set({
+                                no: index,
+                                displayName: displayName,
+                                camp: camp,
+                                alive: true
+                            });
+                        }
+
+                        findghost.game.setStatus(findghost.GAME_STATUS.ONGOING);
+                    } else {
+                        findghost.handleError("人数不足，不能发牌");
+                    }
+                } else {
+                    findghost.handleError("人数不足，不能发牌");
+                }
+            });
         },
         getUsers: function(callback) {
             wilddog.sync().ref("/game/users").once('value', function(snapshot) {
@@ -413,6 +464,46 @@ var findghost = {
             wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.WHITE).once('value', function(snapshot) {
                 callback(snapshot.val());
             });
+        },
+        updatePlayersCallback: function(callback) {
+            var playersListener = wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.PLAYER);
+            playersListener.on("value", function(snapshot) {
+                callback(snapshot.val());
+            });
+            return playersListener;
+        },
+        updateWhitesCallback: function(callback) {
+            var whitesListener = wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.WHITE);
+            whitesListener.on("value", function(snapshot) {
+                callback(snapshot.val());
+            });
+            return whitesListener;
+        },
+        startRecord: function(callback) {
+            var date = findghost.getCurrentDate();
+            findghost.game.getOwner(function(owner){
+                findghost.game.getWords(function(words) {
+                    if(words) {
+                        var manWord = words.manWord;
+                        var ghostWord = words.ghostWord;
+                        findghost.game.getMan(function(manList) {
+                            findghost.game.getGhost(function(manList) {
+                                //date
+                                //owner
+                                //manWord
+                                //ghostWord
+                                //set start date
+                            })
+                        })
+                    }
+                });
+            });
+        },
+        getMan:function(callback){
+            //TODO
+        },
+        getGhost: function(callback) {
+
         }
     }
 }

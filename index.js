@@ -271,6 +271,9 @@ $("#button_white").click(function() {
 });
 
 
+var playersListener = undefined;
+var whitesListener = undefined;
+
 $("#button_start").click(function() {
     findghost.game.getStatus(function(gameStatus) {
         if (gameStatus && gameStatus == findghost.GAME_STATUS.READY) {
@@ -283,10 +286,10 @@ $("#button_start").click(function() {
                             if (manWord && ghostWord) {
                                 $("#span_start_man_word").text(manWord);
                                 $("#span_start_ghost_word").text(ghostWord);
-                                findghost.game.getPlayers(function(players) {
+                                playersListener = findghost.game.updatePlayersCallback(function(players) {
                                     var player_count = 0;
+                                    $("#span_start_player_list").text("");
                                     if (players) {
-                                        $("#span_start_player_list").text();
                                         var users_str = "";
                                         for (uid in players) {
                                             if (player_count > 0) {
@@ -309,9 +312,9 @@ $("#button_start").click(function() {
                                         $("#span_ghost_count").text(ghost_count);
                                     }
                                 });
-                                findghost.game.getWhites(function(whites) {
+                                whitesListener = findghost.game.updateWhitesCallback(function(whites){
+                                    $("#span_start_white_list").text("");
                                     if (whites) {
-                                        $("#span_start_white_list").text();
                                         var white_str = "";
                                         var white_count = 0;
                                         for (uid in whites) {
@@ -323,7 +326,7 @@ $("#button_start").click(function() {
                                         }
                                     }
                                     $("#span_start_white_list").text(white_str);
-                                });
+                                })
                                 $("#modal_start").modal('show');
                             }
                         }
