@@ -148,6 +148,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
                             })
                         } else if (gameRole == findghost.GAME_ROLE.WHITE) {
                             $("#button_white").show();
+                            $("#button_cancel").show();
                         }
                     } else {
                         $("#button_ready_white").show();
