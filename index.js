@@ -51,7 +51,7 @@ findghost.hall.user.updateCallback(function(snapshot) {
 });
 
 // message listener
-findghost.hall.message.updateCallback((function(snapshot) {
+findghost.hall.message.updateCallback(function(snapshot) {
     $("#messages").text("");
     var messages = snapshot.val();
     for (date in messages) {
