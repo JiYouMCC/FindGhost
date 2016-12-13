@@ -249,7 +249,7 @@ var findghost = {
             callback(false);
         },
         kill: function(uid) {
-            wilddog.sync().ref("/game/camp/" + uid).child(alive).set(false);
+            wilddog.sync().ref("/game/camp/" + uid).child("alive").set(false);
         },
         outOfGame: function(uid, displayName) {
             if (!uid || !displayName) {
