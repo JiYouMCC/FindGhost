@@ -175,7 +175,7 @@ var findghost = {
             }
         },
         out: function(uid, displayName) {
-            findghost.game.outOfGame(uid, displayName);
+            findghost.game.out(uid, displayName);
             wilddog.sync().ref("/hall/users/" + uid).remove();
             findghost.hall.message.sendSystem("“" + displayName + "”" + "离开了");
         },
@@ -195,17 +195,20 @@ var findghost = {
                     "role": gameRole
                 }).then(callback);
             },
-            get: function(callback) {
-                var user = findghost.user.get();
-                if (user) {
-                    wilddog.sync().ref("/game/users/" + user.uid).once("value", function(snapshot) {
+            get: function(uid, callback) {
+                if (!uid) {
+                    uid = findghost.user.uid.get();
+                }
+
+                if (uid) {
+                    wilddog.sync().ref("/game/users/" + uid).once("value", function(snapshot) {
                         var result = snapshot.val();
                         if (result) {
                             callback(result.role);
                         } else {
                             callback(undefined);
                         }
-                    })
+                    });
                 } else {
                     callback(undefined);
                 }
@@ -247,18 +250,22 @@ var findghost = {
                     });
                 },
                 ready: function() {
-                    // 任何时候登录用户都可以提出当小白
                     var user = findghost.user.get();
                     if (user) {
                         var uid = user.uid;
                         var displayName = findghost.user.displayName.get();
-                        findghost.game.role.set(uid, displayName, findghost.GAME_ROLE.WHITE, function() {
-                            findghost.game.status.get(function(status) {
-                                if (status && status == findghost.GAME_STATUS.NOT_START) {
-                                    findghost.game.status.set(findghost.GAME_STATUS.READY);
-                                }
-                            })
-                            findghost.hall.message.sendGame("“" + displayName + "”" + "要当小白");
+                        findghost.game.role.white.contains(uid, function(result) {
+                            if (!result) {
+                                findghost.game.role.set(uid, displayName, findghost.GAME_ROLE.WHITE, function() {
+                                    wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
+                                    findghost.game.status.get(function(status) {
+                                        if (status && status == findghost.GAME_STATUS.NOT_START) {
+                                            findghost.game.status.set(findghost.GAME_STATUS.READY);
+                                        }
+                                    })
+                                    findghost.hall.message.sendGame("“" + displayName + "”" + "要当小白");
+                                });
+                            }
                         });
                     }
                 },
@@ -269,6 +276,15 @@ var findghost = {
                     });
                     return whitesListener;
                 },
+                contains: function(uid, callback) {
+                    findghost.game.role.white.get(function(whites) {
+                        if (whites && whites.hasOwnProperty(uid)) {
+                            callback(true);
+                        } else {
+                            callback(false);
+                        }
+                    });
+                }
             },
             owner: {
                 get: function(callback) {
@@ -360,7 +376,7 @@ var findghost = {
         },
         words: {
             get: function(callback) {
-                findghost.game.role.get(function(gameRole) {
+                findghost.game.role.get(undefined, function(gameRole) {
                     switch (gameRole) {
                         case undefined:
                         case findghost.GAME_ROLE.WHITE:
@@ -395,7 +411,7 @@ var findghost = {
                 });
             },
             set: function(manWord, ghostWord, callback) {
-                findghost.game.role.get(function(role) {
+                findghost.game.role.get(undefined, function(role) {
                     if (role && role == findghost.GAME_ROLE.OWNER) {
                         wilddog.sync().ref("/game/").child("words").set({
                             manWord: manWord,
@@ -421,7 +437,7 @@ var findghost = {
                 callback(undefined);
             },
             create: function(callback) {
-                findghost.game.role.get(function(role) {
+                findghost.game.role.get(undefined, function(role) {
                     if (role && role == findghost.GAME_ROLE.OWNER) {
                         findghost.game.role.player.get(function(players) {
                             if (players) {
@@ -474,19 +490,98 @@ var findghost = {
                     }
                 })
             },
+            alive: {
+                get: function(uid, callback) {
+                    if (!uid) {
+                        uid = findghost.user.uid.get();
+                    }
+
+                    if (uid) {
+                        findghost.game.status.get(function(status) {
+                            if (status && status == findghost.GAME_STATUS.ONGOING) {
+                                findghost.game.role.get(uid, function(role) {
+                                    if (role) {
+                                        switch (role) {
+                                            case findghost.GAME_ROLE.OWNER:
+                                                callback(null);
+                                                break;
+                                            case findghost.GAME_ROLE.PLAYER:
+                                                wilddog.sync().ref("/game/camp/" + uid + "/alive").once('value', function(snapshot) {
+                                                    callback(snapshot.val());
+                                                });
+                                                break;
+                                            case findghost.GAME_ROLE.WHITE:
+                                                wilddog.sync().ref("/game/users/" + uid + "/alive").once('value', function(snapshot) {
+                                                    callback(snapshot.val());
+                                                });
+                                                break;
+                                        }
+                                    } else {
+                                        callback(null);
+                                    }
+                                });
+                            } else {
+                                callback(null);
+                            }
+                        });
+                    } else {
+                        callback(undefined);
+                    }
+                },
+                set: function(uid, value, callback) {
+                    if (!uid) {
+                        uid = findghost.user.uid.get();
+                    }
+
+                    if (uid) {
+                        findghost.game.status.get(function(status) {
+                            if (status && status == findghost.GAME_STATUS.ONGOING) {
+                                findghost.game.role.get(uid, function(role) {
+                                    if (role) {
+                                        switch (role) {
+                                            case findghost.GAME_ROLE.OWNER:
+                                                callback(undefined);
+                                                break;
+                                            case findghost.GAME_ROLE.PLAYER:
+                                                wilddog.sync().ref("/game/camp/"+ uid).child("alive").set(value).then(callback);
+                                                break;
+                                            case findghost.GAME_ROLE.WHITE:
+                                                wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
+                                                break;
+                                        }
+                                    } else {
+                                        callback(undefined);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        callback(undefined);
+                    }
+                }
+            },
             man: {
                 get: function(callback) {
-                    //TODO
+                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.CAMP.MAN).once('value', function(snapshot) {
+                        callback(snapshot.val());
+                    });
+                },
+                count: function(callback){
+
                 }
             },
             ghost: {
                 get: function(callback) {
-                    //TODO
+                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.CAMP.GHOST).once('value', function(snapshot) {
+                        callback(snapshot.val());
+                    });
+                }
+            },
+            result:{
+                check: function() {
+
                 }
             }
-        },
-        kill: function(uid) {
-            wilddog.sync().ref("/game/camp/" + uid).child("alive").set(false);
         },
         out: function(uid, displayName) {
             if (!uid || !displayName) {
@@ -497,84 +592,60 @@ var findghost = {
                 }
             }
 
-            // ready player not play/owner not owner/ white not white
-            // ongoing player:alive:run out and die;die:out with body white:alive:give up die:out with body owner: out because boring
-
-            if (uid && displayName) {
-                wilddog.sync().ref("/game/users/" + uid).once('value', function(snapshot) {
-                    var result = snapshot.val();
-                    if (result) {
-                        findghost.game.role.owner.get(function(ownerInfo) {
-                            if (ownerInfo) {
-                                if (ownerInfo.uid == uid) {
+            findghost.game.status.get(function(status) {
+                findghost.game.role.get(uid, function(role) {
+                    if (status && (status == findghost.GAME_STATUS.NOT_START || status == findghost.GAME_STATUS.READY)) {
+                        if (role) {
+                            switch (role) {
+                                case findghost.GAME_ROLE.OWNER:
                                     findghost.game.role.owner.remove(function() {
                                         findghost.hall.message.sendGame("“" + displayName + "”" + "不当法官了");
                                         findghost.game.words.remove(function() {});
                                     });
-                                }
+                                    break;
+                                case findghost.GAME_ROLE.PLAYER:
+                                    findghost.hall.message.sendGame("“" + displayName + "”" + "不玩了");
+                                    break;
+                                case findghost.GAME_ROLE.WHITE:
+                                    findghost.hall.message.sendGame("“" + displayName + "”" + "不当小白了");
+                                    break;
                             }
-                        });
-                        findghost.game.role.player.get(function(players) {
-                            if (players) {
-                                if (players.hasOwnProperty(uid)) {
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "逃跑了");
-                                    findghost.game.kill(uid);
-                                }
-                            }
-                        })
-                        wilddog.sync().ref("/game/users/" + uid).remove();
-                        findghost.hall.message.sendGame("“" + displayName + "”" + "不玩了");
-                        wilddog.sync().ref("/game/users").once("value", function(snapshot) {
-                            var users = snapshot.val();
-                            if (!users) {
-                                findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
-                            }
-                        });
-                    }
-                })
-            }
-        },
-        outOfGame: function(uid, displayName) {
-            if (!uid || !displayName) {
-                var user = findghost.user.get();
-                if (user) {
-                    uid = user.uid;
-                    displayName = findghost.user.displayName.get();
-                }
-            }
-            if (uid && displayName) {
-                wilddog.sync().ref("/game/users/" + uid).once('value', function(snapshot) {
-                    var result = snapshot.val();
-                    if (result) {
-                        findghost.game.role.owner.get(function(ownerInfo) {
-                            if (ownerInfo) {
-                                if (ownerInfo.uid == uid) {
-                                    findghost.game.role.owner.remove(function() {
-                                        findghost.hall.message.sendGame("“" + displayName + "”" + "不当法官了");
-                                        findghost.game.words.remove(function() {});
+                            wilddog.sync().ref("/game/users/" + uid).remove();
+                        }
+                    } else {
+                        if (role) {
+                            switch (role) {
+                                case findghost.GAME_ROLE.OWNER:
+                                    findghost.hall.message.sendGame("法官“" + displayName + "”" + "很无聊，走了");
+                                    break;
+                                case findghost.GAME_ROLE.PLAYER:
+                                    findghost.game.camp.alive.get(uid, function(result){
+                                        if (result) {
+                                            findghost.game.camp.alive.set(uid, false, function(){
+                                                findghost.hall.message.sendGame("玩家“" + displayName + "”" + "逃跑了，逃跑的路上被活活呸死");
+                                            })
+                                        } else {
+                                            findghost.hall.message.sendGame("玩家“" + displayName + "”" + "拖着自己的尸体走了");
+                                        }
+                                    })
+                                    break;
+                                case findghost.GAME_ROLE.WHITE:
+                                    findghost.game.camp.alive.get(uid, function(result){
+                                        if (result) {
+                                            findghost.game.camp.alive.set(uid, false, function(){
+                                                findghost.hall.message.sendGame("小白“" + displayName + "”" + "放弃了");
+                                                wilddog.sync().ref("/game/users/" + uid).remove()
+                                            })
+                                        } else {
+                                            findghost.hall.message.sendGame("小白“" + displayName + "”" + "拖着自己的尸体走了");
+                                        }
                                     });
-                                }
+                                    break;
                             }
-                        });
-                        findghost.game.role.player.get(function(players) {
-                            if (players) {
-                                if (players.hasOwnProperty(uid)) {
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "逃跑了");
-                                    findghost.game.kill(uid);
-                                }
-                            }
-                        })
-                        wilddog.sync().ref("/game/users/" + uid).remove();
-                        findghost.hall.message.sendGame("“" + displayName + "”" + "不玩了");
-                        wilddog.sync().ref("/game/users").once("value", function(snapshot) {
-                            var users = snapshot.val();
-                            if (!users) {
-                                findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
-                            }
-                        });
+                        }
                     }
-                })
-            }
+                });
+            });
         },
     }
 }

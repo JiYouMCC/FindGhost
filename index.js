@@ -73,7 +73,7 @@ findghost.hall.message.updateCallback(function(snapshot) {
 // login/logout listener
 findghost.user.updateCallback(function(user) {
     findghost.game.status.get(function(gameStatus) {
-        findghost.game.role.get(function(gameRole) {
+        findghost.game.role.get(undefined, function(gameRole) {
             formStatusSetting(user, gameRole, gameStatus);
         });
     });
@@ -99,7 +99,19 @@ findghost.game.user.updateCallback(function(users) {
     for (uid in users) {
         var displayName = users[uid].displayName;
         var role = users[uid].role
-        $("#gamer_list").append($("<li></li>").addClass("list-group-item").text(displayName).append($("<span></span>").addClass("badge").text(role)));
+        $("#gamer_list").append(
+            $("<li></li>").addClass("list-group-item").text(displayName).append(
+                $("<span></span>").attr('id', 'game_list_'+uid).addClass("glyphicon")).append(
+                $("<span></span>").addClass("badge").text(role)));
+        findghost.game.camp.alive.get(uid, function(alive){
+            if (alive == true) {
+                $("#game_list_"+uid).removeClass("glyphicon-remove").addClass("glyphicon-ok");
+            } else if (alive == false) {
+                $("#game_list_"+uid).addClass("glyphicon-remove").removeClass("glyphicon-ok");
+            } else {
+                $("#game_list_"+uid).removeClass("glyphicon-remove").removeClass("glyphicon-ok");
+            }
+        })
         count += 1;
     }
     $("#gamer_count").text(count);
@@ -109,7 +121,7 @@ findghost.game.user.updateCallback(function(users) {
 findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
     var user = findghost.user.get();
-    findghost.game.role.get(function(gameRole) {
+    findghost.game.role.get(undefined, function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
 });
@@ -268,7 +280,7 @@ $("#button_ready_play").click(function() {
 });
 
 $("#button_cancel").click(function() {
-    findghost.game.outOfGame();
+    findghost.game.out();
 });
 
 $("#button_ready_white").click(function() {
@@ -302,7 +314,7 @@ var whitesListener = undefined;
 $("#button_start").click(function() {
     findghost.game.status.get(function(gameStatus) {
         if (gameStatus && gameStatus == findghost.GAME_STATUS.READY) {
-            findghost.game.role.get(function(gameRole) {
+            findghost.game.role.get(undefined, function(gameRole) {
                 if (gameRole && gameRole == findghost.GAME_ROLE.OWNER) {
                     findghost.game.words.get(function(words) {
                         if (words) {
