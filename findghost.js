@@ -224,9 +224,9 @@ var findghost = {
                             }
                             findghost.hall.message.sendSystem("鬼：" + ghost_str);
                         }
-                        findghost.game.words.remove(function(){
-                            findghost.game.role.owner.remove(function(){
-                                findghost.game.user.removeAll(function(){
+                        findghost.game.words.remove(function() {
+                            findghost.game.role.owner.remove(function() {
+                                findghost.game.user.removeAll(function() {
                                     findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
                                 });
                             });
@@ -234,7 +234,7 @@ var findghost = {
                     });
                 });
             });
-            
+
         },
         role: {
             callback: undefined,
@@ -524,6 +524,7 @@ var findghost = {
                                         var uid = playerList[i][1];
                                         var displayName = playerList[i][2];
                                         var camp = undefined;
+                                        wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
                                         if (ghostList.indexOf(index) < 0) {
                                             camp = findghost.CAMP.MAN;
                                         } else {
@@ -535,8 +536,6 @@ var findghost = {
                                             displayName: displayName,
                                             camp: camp,
                                             alive: true
-                                        }).then(function() {
-                                            wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
                                         });
                                     }
 
