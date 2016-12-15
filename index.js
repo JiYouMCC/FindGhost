@@ -98,20 +98,18 @@ findghost.game.user.updateCallback(function(users) {
     var count = 0;
     for (uid in users) {
         var displayName = users[uid].displayName;
-        var role = users[uid].role
+        var role = users[uid].role;
+        var alive = users[uid].alive;
+        var aliveClass = "glyphicon";
+        if (alive == true) {
+            aliveClass += " glyphicon-ok";
+        } else if (alive == false) {
+            aliveClass += " glyphicon-remove";
+        }
         $("#gamer_list").append(
             $("<li></li>").addClass("list-group-item").text(displayName).append(
-                $("<span></span>").attr('id', 'game_list_'+uid).addClass("glyphicon")).append(
+                $("<span></span>").addClass(aliveClass)).append(
                 $("<span></span>").addClass("badge").text(role)));
-        findghost.game.camp.alive.get(uid, function(alive){
-            if (alive == true) {
-                $("#game_list_"+uid).removeClass("glyphicon-remove").addClass("glyphicon-ok");
-            } else if (alive == false) {
-                $("#game_list_"+uid).addClass("glyphicon-remove").removeClass("glyphicon-ok");
-            } else {
-                $("#game_list_"+uid).removeClass("glyphicon-remove").removeClass("glyphicon-ok");
-            }
-        })
         count += 1;
     }
     $("#gamer_count").text(count);

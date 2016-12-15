@@ -192,7 +192,8 @@ var findghost = {
             set: function(uid, displayName, gameRole, callback) {
                 wilddog.sync().ref("/game/users/").child(uid).set({
                     "displayName": displayName,
-                    "role": gameRole
+                    "role": gameRole,
+                    "alive": null
                 }).then(callback);
             },
             get: function(uid, callback) {
@@ -257,7 +258,7 @@ var findghost = {
                         findghost.game.role.white.contains(uid, function(result) {
                             if (!result) {
                                 findghost.game.role.set(uid, displayName, findghost.GAME_ROLE.WHITE, function() {
-                                    wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
+                                    //wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
                                     findghost.game.status.get(function(status) {
                                         if (status && status == findghost.GAME_STATUS.NOT_START) {
                                             findghost.game.status.set(findghost.GAME_STATUS.READY);
@@ -544,7 +545,6 @@ var findghost = {
                                                 break;
                                             case findghost.GAME_ROLE.PLAYER:
                                                 wilddog.sync().ref("/game/camp/"+ uid).child("alive").set(value).then(callback);
-                                                break;
                                             case findghost.GAME_ROLE.WHITE:
                                                 wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
                                                 break;
