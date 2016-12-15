@@ -477,6 +477,8 @@ var findghost = {
                                             displayName: displayName,
                                             camp: camp,
                                             alive: true
+                                        }).then(function(){
+                                            wilddog.sync().ref("/game/users/"+ uid).child("alive").set(true);
                                         });
                                     }
 
@@ -544,7 +546,10 @@ var findghost = {
                                                 callback(undefined);
                                                 break;
                                             case findghost.GAME_ROLE.PLAYER:
-                                                wilddog.sync().ref("/game/camp/"+ uid).child("alive").set(value).then(callback);
+                                                wilddog.sync().ref("/game/camp/"+ uid).child("alive").set(value).then(function(){
+                                                    wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
+                                                });
+                                                break;
                                             case findghost.GAME_ROLE.WHITE:
                                                 wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
                                                 break;
