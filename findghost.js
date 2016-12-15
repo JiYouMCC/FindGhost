@@ -187,6 +187,55 @@ var findghost = {
         }
     },
     game: {
+        end: function(result, winer) {
+            findghost.hall.message.sendSystem("游戏结束," + winer + "赢了");
+            findghost.game.words.getAll(function(words) {
+                var manWord = words.manWord;
+                var ghostWord = words.ghostWord;
+                if (manWord && ghostWord) {
+                    findghost.hall.message.sendSystem("人词：" + manWord);
+                    findghost.hall.message.sendSystem("鬼词：" + ghostWord);
+                }
+
+                findghost.game.camp.man.get(function(men) {
+                    if (men) {
+                        var men_str = "";
+                        var men_count = 0;
+                        for (uid in men) {
+                            if (men_count > 0) {
+                                men_str += "，"
+                            }
+                            men_str += men[uid].displayName;
+                            men_count += 1
+                        }
+                        findghost.hall.message.sendSystem("人：" + men_str);
+                    }
+
+                    findghost.game.camp.ghost.get(function(ghosts) {
+                        if (ghosts) {
+                            var ghost_str = "";
+                            var ghost_count = 0;
+                            for (uid in ghosts) {
+                                if (ghost_count > 0) {
+                                    ghost_str += "，"
+                                }
+                                ghost_str += ghosts[uid].displayName;
+                                ghost_count += 1
+                            }
+                            findghost.hall.message.sendSystem("鬼：" + ghost_str);
+                        }
+                        findghost.game.words.remove(function(){
+                            findghost.game.role.owner.remove(function(){
+                                findghost.game.user.removeAll(function(){
+                                    findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+            
+        },
         role: {
             callback: undefined,
             set: function(uid, displayName, gameRole, callback) {
@@ -373,6 +422,10 @@ var findghost = {
                     var users = snapshot.val();
                     callback(users);
                 });
+            },
+            removeAll: function(callback) {
+                wilddog.sync().ref("/game/users").remove();
+                callback();
             }
         },
         words: {
@@ -425,6 +478,11 @@ var findghost = {
                 wilddog.sync().ref("/game/words").remove();
                 callback();
             },
+            getAll: function(callback) {
+                wilddog.sync().ref("/game/words/").once('value', function(snapshot) {
+                    callback(snapshot.val());
+                });
+            }
         },
         camp: {
             get: function(callback) {
@@ -477,8 +535,8 @@ var findghost = {
                                             displayName: displayName,
                                             camp: camp,
                                             alive: true
-                                        }).then(function(){
-                                            wilddog.sync().ref("/game/users/"+ uid).child("alive").set(true);
+                                        }).then(function() {
+                                            wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
                                         });
                                     }
 
@@ -546,12 +604,12 @@ var findghost = {
                                                 callback(undefined);
                                                 break;
                                             case findghost.GAME_ROLE.PLAYER:
-                                                wilddog.sync().ref("/game/camp/"+ uid).child("alive").set(value).then(function(){
-                                                    wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
+                                                wilddog.sync().ref("/game/camp/" + uid).child("alive").set(value).then(function() {
+                                                    wilddog.sync().ref("/game/users/" + uid).child("alive").set(value).then(callback);
                                                 });
                                                 break;
                                             case findghost.GAME_ROLE.WHITE:
-                                                wilddog.sync().ref("/game/users/"+ uid).child("alive").set(value).then(callback);
+                                                wilddog.sync().ref("/game/users/" + uid).child("alive").set(value).then(callback);
                                                 break;
                                         }
                                     } else {
@@ -563,6 +621,16 @@ var findghost = {
                     } else {
                         callback(undefined);
                     }
+                },
+                kill: function(uid, callback) {
+                    findghost.game.camp.alive.set(uid, false, function() {
+                        findghost.game.camp.result.check(function(result, winer) {
+                            if (result) {
+                                findghost.game.end(result, winer);
+                            }
+                        })
+                        callback;
+                    })
                 }
             },
             man: {
@@ -571,8 +639,14 @@ var findghost = {
                         callback(snapshot.val());
                     });
                 },
-                count: function(callback){
-
+                count: function(callback) {
+                    findghost.game.camp.man.get(function(men) {
+                        var result = 0;
+                        for (uid in men) {
+                            result += 1;
+                        }
+                        callback(result);
+                    })
                 }
             },
             ghost: {
@@ -580,11 +654,44 @@ var findghost = {
                     wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.CAMP.GHOST).once('value', function(snapshot) {
                         callback(snapshot.val());
                     });
+                },
+                count: function(callback) {
+                    findghost.game.camp.ghost.get(function(men) {
+                        var result = 0;
+                        for (uid in men) {
+                            result += 1;
+                        }
+                        callback(result);
+                    })
                 }
             },
-            result:{
-                check: function() {
+            result: {
+                check: function(callback) {
+                    findghost.game.camp.man.get(function(men) {
+                        findghost.game.camp.ghost.get(function(ghosts) {
+                            var aliveManCount = 0;
+                            var aliveGhostCount = 0;
+                            for (uid in men) {
+                                if (men[uid].alive) {
+                                    aliveManCount += 1;
+                                }
+                            }
 
+                            for (uid in ghosts) {
+                                if (ghosts[uid].alive) {
+                                    aliveGhostCount += 1;
+                                }
+                            }
+
+                            if (aliveGhostCount == 0) {
+                                callback(true, findghost.CAMP.MAN);
+                            } else if (aliveGhostCount >= aliveManCount) {
+                                callback(true, findghost.CAMP.GHOST);
+                            } else {
+                                callback(false, null);
+                            }
+                        });
+                    });
                 }
             }
         },
@@ -624,9 +731,9 @@ var findghost = {
                                     findghost.hall.message.sendGame("法官“" + displayName + "”" + "很无聊，走了");
                                     break;
                                 case findghost.GAME_ROLE.PLAYER:
-                                    findghost.game.camp.alive.get(uid, function(result){
+                                    findghost.game.camp.alive.get(uid, function(result) {
                                         if (result) {
-                                            findghost.game.camp.alive.set(uid, false, function(){
+                                            findghost.game.camp.alive.kill(uid, function() {
                                                 findghost.hall.message.sendGame("玩家“" + displayName + "”" + "逃跑了，逃跑的路上被活活呸死");
                                             })
                                         } else {
@@ -635,9 +742,9 @@ var findghost = {
                                     })
                                     break;
                                 case findghost.GAME_ROLE.WHITE:
-                                    findghost.game.camp.alive.get(uid, function(result){
+                                    findghost.game.camp.alive.get(uid, function(result) {
                                         if (result) {
-                                            findghost.game.camp.alive.set(uid, false, function(){
+                                            findghost.game.camp.alive.kill(uid, function() {
                                                 findghost.hall.message.sendGame("小白“" + displayName + "”" + "放弃了");
                                                 wilddog.sync().ref("/game/users/" + uid).remove()
                                             })
