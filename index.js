@@ -72,28 +72,28 @@ findghost.hall.message.updateCallback(function(snapshot) {
 
 // login/logout listener
 findghost.user.updateCallback(function(user) {
-    findghost.game.getStatus(function(gameStatus) {
-        findghost.game.getRole(function(gameRole) {
+    findghost.game.status.get(function(gameStatus) {
+        findghost.game.role.get(function(gameRole) {
             formStatusSetting(user, gameRole, gameStatus);
         });
     });
     if (user) {
         // set game role listener
-        findghost.game.updateRoleCallback(function(gameRole) {
-            findghost.game.getStatus(function(gameStatus) {
+        findghost.game.role.updateCallback(function(gameRole) {
+            findghost.game.status.get(function(gameStatus) {
                 formStatusSetting(user, gameRole, gameStatus);
             });
         })
     } else {
-        findghost.game.removeRoleCallback();
-        findghost.game.getStatus(function(gameStatus) {
+        findghost.game.role.removeCallback();
+        findghost.game.status.get(function(gameStatus) {
             formStatusSetting(user, undefined, gameStatus);
         });
     }
 });
 
 // gamer listener
-findghost.game.updateUserCallback(function(users) {
+findghost.game.user.updateCallback(function(users) {
     $("#gamer_list").text("");
     var count = 0;
     for (uid in users) {
@@ -106,10 +106,10 @@ findghost.game.updateUserCallback(function(users) {
 });
 
 // game status listener
-findghost.game.updateStatusCallback(function(gameStatus) {
+findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
     var user = findghost.user.get();
-    findghost.game.getRole(function(gameRole) {
+    findghost.game.role.get(function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
 });
@@ -141,7 +141,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
                     if (gameRole) {
                         if (gameRole == findghost.GAME_ROLE.PLAYER) {
                             $("#button_pass").show();
-                            findghost.game.getWords(function(word) {
+                            findghost.game.words.get(function(word) {
                                 if (word) {
                                     $("#span_word").text("你的词:" + word);
                                 }
@@ -257,14 +257,14 @@ $("#button_update_display_name").click(function() {
 });
 
 $("#button_chat").click(function() {
-    findghost.hall.chat($("#chat").val(), function() {
+    findghost.hall.message.sendChat($("#chat").val(), function() {
         $("#chat").val("");
         $("#chat").focus();
     });
 });
 
 $("#button_ready_play").click(function() {
-    findghost.game.readyToPlay();
+    findghost.game.role.player.ready();
 });
 
 $("#button_cancel").click(function() {
@@ -272,7 +272,7 @@ $("#button_cancel").click(function() {
 });
 
 $("#button_ready_white").click(function() {
-    findghost.game.readyToWhite();
+    findghost.game.role.white.ready();
 });
 
 $("#button_ready_owner").click(function() {
@@ -283,7 +283,7 @@ $("#button_owner_commit").click(function() {
     var manWord = $("#word_man").val();
     var ghostWord = $("#word_ghost").val();
     if (manWord && ghostWord) {
-        findghost.game.readyToOwner(manWord, ghostWord, function(result) {
+        findghost.game.role.owner.ready(manWord, ghostWord, function(result) {
             if (result) {
                 $("#modal_owner").modal('hide');
             }
@@ -300,18 +300,18 @@ var playersListener = undefined;
 var whitesListener = undefined;
 
 $("#button_start").click(function() {
-    findghost.game.getStatus(function(gameStatus) {
+    findghost.game.status.get(function(gameStatus) {
         if (gameStatus && gameStatus == findghost.GAME_STATUS.READY) {
-            findghost.game.getRole(function(gameRole) {
+            findghost.game.role.get(function(gameRole) {
                 if (gameRole && gameRole == findghost.GAME_ROLE.OWNER) {
-                    findghost.game.getWords(function(words) {
+                    findghost.game.words.get(function(words) {
                         if (words) {
                             var manWord = words.manWord;
                             var ghostWord = words.ghostWord;
                             if (manWord && ghostWord) {
                                 $("#span_start_man_word").text(manWord);
                                 $("#span_start_ghost_word").text(ghostWord);
-                                playersListener = findghost.game.updatePlayersCallback(function(players) {
+                                playersListener = findghost.game.role.player.updateCallback(function(players) {
                                     var player_count = 0;
                                     $("#span_start_player_list").text("");
                                     if (players) {
@@ -337,7 +337,7 @@ $("#button_start").click(function() {
                                         $("#span_ghost_count").text(ghost_count);
                                     }
                                 });
-                                whitesListener = findghost.game.updateWhitesCallback(function(whites) {
+                                whitesListener = findghost.game.role.white.updateCallback(function(whites) {
                                     $("#span_start_white_list").text("");
                                     if (whites) {
                                         var white_str = "";
@@ -363,7 +363,7 @@ $("#button_start").click(function() {
 });
 
 $("#button_start_confirm").click(function() {
-    findghost.game.createCamp(function() {
+    findghost.game.camp.create(function() {
         findghost.game.startRecord(function() {});
     });
 });
