@@ -59,9 +59,21 @@ findghost.hall.message.updateCallback(function(snapshot) {
         var messageType = messages[date].type;
         var dateTime = new Date(parseInt(date));
         if (messageType == findghost.MESSAGE_TYPE.SYSTEM) {
-            $("#messages").append($("<div></div>").addClass("text-danger").append($("<span></span>").text(findghost.formatDate(dateTime) + " ").append($("<span></span>").text(message))));
+            $("#messages").append(
+                $("<div></div>").addClass("text-danger").append(
+                    $("<span></span>").text("【系统消息】").append(
+                        $("<span></span>").text(message)
+                    )
+                )
+            );
         } else if (messageType == findghost.MESSAGE_TYPE.GAME) {
-            $("#messages").append($("<div></div>").addClass("text-info").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(message)));
+            $("#messages").append(
+                $("<div></div>").addClass("text-info").append(
+                    $("<span></span>").text("【游戏信息】").append(
+                        $("<span></span>").text(message)
+                    )
+                )
+            );
         } else {
             var userDisplay = messages[date].displayName;
             $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(userDisplay + "：")).append($("<span></span>").text(message)));
@@ -374,6 +386,6 @@ $("#button_start").click(function() {
 
 $("#button_start_confirm").click(function() {
     findghost.game.camp.create(function() {
-        findghost.game.startRecord(function() {});
+        findghost.game.start(function() {});
     });
 });

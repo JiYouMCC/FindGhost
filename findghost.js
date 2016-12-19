@@ -187,14 +187,18 @@ var findghost = {
         }
     },
     game: {
+        start: function(callback) {
+            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
+            callback();
+        },
         end: function(result, winer) {
-            findghost.hall.message.sendSystem("游戏结束," + winer + "赢了");
+            findghost.hall.message.sendGame("游戏结束," + winer + "赢了");
             findghost.game.words.getAll(function(words) {
                 var manWord = words.manWord;
                 var ghostWord = words.ghostWord;
                 if (manWord && ghostWord) {
-                    findghost.hall.message.sendSystem("人词：" + manWord);
-                    findghost.hall.message.sendSystem("鬼词：" + ghostWord);
+                    findghost.hall.message.sendGame("人词：" + manWord);
+                    findghost.hall.message.sendGame("鬼词：" + ghostWord);
                 }
 
                 findghost.game.camp.man.get(function(men) {
@@ -208,7 +212,7 @@ var findghost = {
                             men_str += men[uid].displayName;
                             men_count += 1
                         }
-                        findghost.hall.message.sendSystem("人：" + men_str);
+                        findghost.hall.message.sendGame("人：" + men_str);
                     }
 
                     findghost.game.camp.ghost.get(function(ghosts) {
@@ -222,7 +226,7 @@ var findghost = {
                                 ghost_str += ghosts[uid].displayName;
                                 ghost_count += 1
                             }
-                            findghost.hall.message.sendSystem("鬼：" + ghost_str);
+                            findghost.hall.message.sendGame("鬼：" + ghost_str);
                         }
                         findghost.game.words.remove(function() {
                             findghost.game.role.owner.remove(function() {
@@ -234,7 +238,6 @@ var findghost = {
                     });
                 });
             });
-
         },
         role: {
             callback: undefined,
@@ -291,6 +294,30 @@ var findghost = {
                         callback(snapshot.val());
                     });
                     return playersListener;
+                },
+                contains: function(uid, callback) {
+                    findghost.game.role.player.get(function(players) {
+                        if (players && players.hasOwnProperty(uid)) {
+                            callback(true);
+                        } else {
+                            callback(false);
+                        }
+                    });
+                },
+                getAlive: function(callback) {
+                    wilddog.sync().ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.PLAYER).once('value', function(snapshot) {
+                        var result = snapshot.val();
+                        if (result) {
+                            var finalResult = {};
+                            for (uid in result) {
+                                if (result[uid].alive) {
+                                    finalResult[uid] = result[uid];
+                                }
+                                callback(finalResult);
+                            }
+                        }
+
+                    });
                 }
             },
             white: {
@@ -392,6 +419,7 @@ var findghost = {
             removeCallback: function() {
                 if (findghost.game.role.callback) {
                     findghost.game.role.callback.off();
+                    findghost.game.role.callback = undefined;
                 }
             },
         },
@@ -691,6 +719,112 @@ var findghost = {
                             }
                         });
                     });
+                }
+            }
+        },
+        vote: {
+            callback: undefined,
+            STATUS: {
+                NOT_START: "未开始",
+                IN_PROGRESS: "投票中",
+                DONE: "已完成"
+            },
+            target: {
+                get: function(callback) {
+                    var user = findghost.user.get();
+                    if (user) {
+                        findghost.game.role.player.getAlive(function(alivePlayers) {
+                            if (alivePlayers.hasOwnProperty(user.uid)) {
+                                // delete alivePlayers[user.uid];
+                                callback(alivePlayers);
+                            } else {
+                                callback(undefined);
+                            }
+                        });
+                    } else {
+                        callback(undefined);
+                    }
+                }
+            },
+            get: function(callback) {
+                wilddog.sync().ref("/game/vote").once('value', function(snapshot) {
+                    callback(snapshot.val());
+                });
+            },
+            set: function(uid, tid, callback) {
+                if (!uid) {
+                    uid = findghost.user.uid.get();
+                }
+
+                if (uid) {
+                    findghost.game.role.player.getAlive(function(alivePlayers) {
+                        if (alivePlayers && alivePlayers.hasOwnProperty(uid) && alivePlayers.hasOwnProperty(tid)) {
+                            wilddog.sync().ref("/game/vote").child(uid).set(tid).then(callback);
+                        } else {
+                            callback(undefined);
+                        }
+                    });
+                } else {
+                    callback(undefined);
+                }
+            },
+            status: {
+                get: function(callback) {
+                    findghost.game.vote.get(function(votes) {
+                        var voteCount = 0;
+                        for (uid in votes) {
+                            voteCount += 1;
+                        }
+
+                        if (voteCount == 0) {
+                            callback(findghost.game.vote.STATUS.NOT_START);
+                        } else {
+                            findghost.game.role.player.getAlive(function(alivePlayers) {
+                                var alivePlayersCount = 0;
+                                for (uid in alivePlayers) {
+                                    alivePlayersCount += 1;
+                                }
+
+                                if (voteCount == alivePlayersCount) {
+                                    callback(findghost.game.vote.STATUS.DONE);
+                                } else {
+                                    callback(findghost.game.vote.STATUS.IN_PROGRESS);
+                                }
+                            });
+                        }
+                    })
+                }
+            },
+            result: function(callback) {
+                findghost.game.vote.status.get(function(status) {
+                    if (status == findghost.game.vote.STATUS.DONE) {
+                        var result = {};
+                        findghost.game.vote.get(function(votes) {
+                            for (uid in votes) {
+                                var tid = votes[uid];
+                                if (result.hasOwnProperty(tid)) {
+                                    result[tid].append[uid];
+                                } else {
+                                    result[tid] = [uid];
+                                }
+                            }
+                            callback(true, result);
+                        });
+                    } else {
+                        callback(false, undefined);
+                    }
+                });
+            },
+            updateCallback: function(callback) {
+                findghost.game.vote.callback = wilddog.sync().ref("/game/vote/");
+                findghost.game.vote.callback.on("value", function(snapshot) {
+                    callback(snapshot.val());
+                });
+            },
+            removeCallback: function() {
+                if (findghost.game.vote.callback) {
+                    findghost.game.vote.callback.off();
+                    findghost.game.vote.callback = undefined;
                 }
             }
         },
