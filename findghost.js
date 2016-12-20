@@ -699,7 +699,7 @@ var findghost = {
                                 findghost.game.end(result, winer);
                             }
                         })
-                        callback;
+                        callback();
                     })
                 }
             },
