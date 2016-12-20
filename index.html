@@ -23,7 +23,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
             <li>
-              <a href="/" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
+              <a id="menu_rule" href="#" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
             </li>
             <li>
               <a href="/" role="button" aria-haspopup="true" aria-expanded="false">游戏记录</a>
@@ -62,13 +62,16 @@
                 </div>
               </div>
               </div>
-              <div class="list-group-item">
+              <div class="list-group-item form-inline">
                 <button id="button_ready_play" class="btn btn-default">准备玩</button>
                 <button id="button_ready_white" class="btn btn-default">准备当小白</button>
                 <button id="button_ready_owner" class="btn btn-default">我有词</button>
                 <button id="button_start" class="btn btn-default">开始</button>
                 <button id="button_cancel" class="btn btn-default">取消</button>
                 <button id="button_pass" class="btn btn-default">过</button>
+                <select id="select_vote" class="form-control">
+                </select>
+                <button id="button_vote" class="btn btn-default">投票</button>
                 <button id="button_white" class="btn btn-default">小白猜词</button>
               </div>
             </div>
@@ -263,7 +266,7 @@
       </div>
     </div>
     <!-- start modal -->
-    <div id="modal_start" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_error" aria-hidden="true">
+    <div id="modal_start" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_start" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -284,6 +287,112 @@
             <button id="button_start_confirm" type="button" class="btn btn-default">开始</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- rule modal -->
+    <div id="modal_rule" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="modal_rule" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">规则说明</h4>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li><dl><dt>游戏介绍</dt><dd>通过发言来判断阵营，设法让对方出局的游戏</dd></dl></li>
+          <li>
+            <dl>
+              <dt>身份</dt>
+              <dd>
+                <table class="table table-bordered table-condensed">
+                  <thead>
+                    <tr>
+                      <th>身份</th>
+                      <th>阵营</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>法官</td>
+                      <td>无</td>
+                      <td>负责出词，要求两个词意思相近、字数相等</td>
+                    </tr>
+                    <tr>
+                      <td>小白</td>
+                      <td>第三方</td>
+                      <td>从玩家发言中判断出人词是什么</td>
+                    </tr>
+                    <tr>
+                      <td rowspan="2">玩家</td>
+                      <td>人</td>
+                      <td>拿到人词的玩家，为多数方</td>
+                    </tr>
+                    <tr>
+                      <td>鬼</td>
+                      <td>拿到鬼词的玩家，为少数方</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </dd>
+            </dl>
+          </li>
+          <li>
+            <dl>
+              <dt>游戏进程</dt>
+              <dd>
+                <table class="table table-bordered table-condensed">
+                  <tbody>
+                    <tr>
+                      <th>准备</th>
+                      <td><p>法官想好一对词语并发给玩家，词语多数的一方为人，发到词语少数一方为鬼。</p>
+        <p>双方都不知道自己的身份和对方的词语。</p></td>
+                    </tr>
+                    <tr>
+                      <th>发言</th>
+                      <td><p>法官指定一个人开始发言，发言者通常发表与自己词语相关特性的话，但不得提到自己词语里包含的字（法官特别指出的常用字不在此列）发言一般第一回合两轮，第二回合起每回合一轮。</p>
+        <p>玩家人数小于五人时，第一回合发言三轮。</p></td>
+                    </tr>
+                    <tr>
+                      <th>投票</th>
+                      <td><p>发言完毕以后投票。</p>
+        <p>高票者出局，如平票则进入pk。</p>
+        <p>PK平票则一起出局。投票完，则开始下一轮发言，直到一方满足胜利条件。</p></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </dd>
+            </dl>
+          </li>
+          <li>
+            <dl>
+              <dt>胜利条件</dt>
+              <dd>
+                <table class="table table-bordered table-condensed">
+                  <tbody>
+                    <tr>
+                      <th>人胜利条件</th>
+                      <td>所有鬼出局</td>
+                    </tr>
+                    <tr>
+                      <th>鬼胜利条件</th>
+                      <td>鬼的人数不少于人</td>
+                    </tr>
+                    <tr>
+                      <th>小白胜利条件</th>
+                      <td>小白在游戏没有结束前的任何时候猜中人词</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
         </div>
       </div>
     </div>
