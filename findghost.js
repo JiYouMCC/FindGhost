@@ -116,20 +116,14 @@ var findghost = {
     },
     hall: {
         timestamp: {
-            cache: undefined,
             get: function(callback) {
-                if (findghost.hall.timestamp.cache) {
-                    callback(findghost.hall.timestamp.cache);
-                } else {
-                    wilddog.sync().ref("/hall/timestamp/").once("value", function(snapshot) {
-                        if (snapshot && snapshot.val()) {
-                            callback(snapshot.val());
-                            findghost.hall.timestamp.cache = snapshot.val();
-                        } else {
-                            callback(0);
-                        }
-                    });
-                }
+                wilddog.sync().ref("/hall/timestamp/").once("value", function(snapshot) {
+                    if (snapshot && snapshot.val()) {
+                        callback(snapshot.val());
+                    } else {
+                        callback(0);
+                    }
+                });
             },
             set: function(date, callback) {
                 if (!date) {
@@ -137,7 +131,6 @@ var findghost = {
                 }
 
                 wilddog.sync().ref("/hall").child("timestamp").set(date).then(function() {
-                    findghost.hall.timestamp.cache = date;
                     callback();
                 });
             }
@@ -533,7 +526,7 @@ var findghost = {
                             ghostWord: ghostWord
                         }).then(callback);
                     }
-                })
+                });
             },
             remove: function(callback) {
                 wilddog.sync().ref("/game/words").remove();
@@ -543,6 +536,19 @@ var findghost = {
                 wilddog.sync().ref("/game/words/").once('value', function(snapshot) {
                     callback(snapshot.val());
                 });
+            },
+            check: function(manWord, ghostWord) {
+                if (manWord && ghostWord) {
+                    if (manWord == ghostWord) {
+                        return "人词和鬼词不能一样！";
+                    } else if (manWord.length != ghostWord.length) {
+                        return "人词和鬼词字数不同！";
+                    } else {
+                        return undefined;
+                    }
+                } else {
+                    return "词不能为空！";
+                }
             }
         },
         camp: {
@@ -699,7 +705,7 @@ var findghost = {
                                 findghost.game.end(result, winer);
                             }
                         })
-                        callback();
+                        callback;
                     })
                 }
             },
