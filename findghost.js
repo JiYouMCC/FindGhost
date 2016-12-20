@@ -1,12 +1,6 @@
 var findghost = {
     userSleepTime: 2 * 60 * 1000,
     showMessageCount: 512,
-    MESSAGE_TYPE: {
-        SYSTEM: "系统消息",
-        CHAT: "聊天消息",
-        GAME: "游戏消息",
-        PLAYER: "玩家发言",
-    },
     GAME_ROLE: {
         PLAYER: "玩家",
         WHITE: "小白",
@@ -121,6 +115,33 @@ var findghost = {
         }
     },
     hall: {
+        timestamp: {
+            cache: undefined,
+            get: function(callback) {
+                if (findghost.hall.timestamp.cache) {
+                    callback(findghost.hall.timestamp.cache);
+                } else {
+                    wilddog.sync().ref("/hall/timestamp/").once("value", function(snapshot) {
+                        if (snapshot && snapshot.val()) {
+                            callback(snapshot.val());
+                            findghost.hall.timestamp.cache = snapshot.val();
+                        } else {
+                            callback(0);
+                        }
+                    });
+                }
+            },
+            set: function(date, callback) {
+                if (!date) {
+                    date = findghost.getCurrentDate();
+                }
+
+                wilddog.sync().ref("/hall").child("timestamp").set(date).then(function() {
+                    findghost.hall.timestamp.cache = date;
+                    callback();
+                });
+            }
+        },
         user: {
             clear: function() {
                 var user = findghost.user.get();
@@ -143,6 +164,12 @@ var findghost = {
             },
         },
         message: {
+            TYPE: {
+                SYSTEM: "系统消息",
+                CHAT: "聊天消息",
+                GAME: "游戏消息",
+                PLAYER: "玩家发言",
+            },
             send: function(uid, displayName, message, type, callback) {
                 var currentDate = findghost.getCurrentDate();
                 wilddog.sync().ref("/hall/message").child(currentDate).set({
@@ -153,25 +180,27 @@ var findghost = {
                 }).then(callback);
             },
             sendSystem: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.MESSAGE_TYPE.SYSTEM, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, callback);
             },
             sendGame: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.MESSAGE_TYPE.GAME, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, callback);
             },
             sendChat: function(message, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.MESSAGE_TYPE.CHAT, callback);
+                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, callback);
                 }
             },
             sendPlayer: function(message, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.MESSAGE_TYPE.PLAYER, callback);
+                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.PLAYER, callback);
                 }
             },
             updateCallback: function(callback) {
-                wilddog.sync().ref("/hall/message").orderByKey().limitToLast(findghost.showMessageCount).on("value", callback);
+                findghost.hall.timestamp.get(function(timestamp) {
+                    wilddog.sync().ref("/hall/message").orderByKey().startAt(timestamp.toString()).on("value", callback);
+                });
             }
         },
         out: function(uid, displayName) {
@@ -188,8 +217,10 @@ var findghost = {
     },
     game: {
         start: function(callback) {
-            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
-            callback();
+            findghost.hall.timestamp.set(undefined, function() {
+                findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
+                callback();
+            });
         },
         end: function(result, winer) {
             findghost.hall.message.sendGame("游戏结束," + winer + "赢了");
@@ -231,7 +262,9 @@ var findghost = {
                         findghost.game.words.remove(function() {
                             findghost.game.role.owner.remove(function() {
                                 findghost.game.user.removeAll(function() {
-                                    findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
+                                    findghost.game.camp.remove(function() {
+                                        findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
+                                    })
                                 });
                             });
                         });
@@ -523,6 +556,10 @@ var findghost = {
                 }
                 callback(undefined);
             },
+            remove: function(callback) {
+                wilddog.sync().ref("/game/camp").remove();
+                callback();
+            },
             create: function(callback) {
                 findghost.game.role.get(undefined, function(role) {
                     if (role && role == findghost.GAME_ROLE.OWNER) {
@@ -568,6 +605,7 @@ var findghost = {
                                     }
 
                                     findghost.game.status.set(findghost.GAME_STATUS.ONGOING);
+                                    callback();
                                 } else {
                                     findghost.handleError("人数不足，不能发牌");
                                 }
@@ -600,7 +638,11 @@ var findghost = {
                                                 break;
                                             case findghost.GAME_ROLE.WHITE:
                                                 wilddog.sync().ref("/game/users/" + uid + "/alive").once('value', function(snapshot) {
-                                                    callback(snapshot.val());
+                                                    if (snapshot.val() && snapshot.val() == false) {
+                                                        callback(false);
+                                                    } else {
+                                                        callback(true);
+                                                    }
                                                 });
                                                 break;
                                         }

@@ -58,7 +58,7 @@ findghost.hall.message.updateCallback(function(snapshot) {
         var message = messages[date].message;
         var messageType = messages[date].type;
         var dateTime = new Date(parseInt(date));
-        if (messageType == findghost.MESSAGE_TYPE.SYSTEM) {
+        if (messageType == findghost.hall.message.TYPE.SYSTEM) {
             $("#messages").append(
                 $("<div></div>").addClass("text-danger").append(
                     $("<span></span>").text("【系统消息】").append(
@@ -66,7 +66,7 @@ findghost.hall.message.updateCallback(function(snapshot) {
                     )
                 )
             );
-        } else if (messageType == findghost.MESSAGE_TYPE.GAME) {
+        } else if (messageType == findghost.hall.message.TYPE.GAME) {
             $("#messages").append(
                 $("<div></div>").addClass("text-info").append(
                     $("<span></span>").text("【游戏信息】").append(
@@ -159,10 +159,14 @@ function formStatusSetting(user, gameRole, gameStatus) {
                     $("#button_start").hide();
                     $("#button_white").hide();
                     $("#button_pass").hide();
+                    $("#button_vote").hide();
+                    $("#select_vote").hide();
                     $("#button_ready_white").hide();
                     if (gameRole) {
                         if (gameRole == findghost.GAME_ROLE.PLAYER) {
                             $("#button_pass").show();
+                            $("#button_vote").show();
+                            $("#select_vote").show();
                             findghost.game.words.get(function(word) {
                                 if (word) {
                                     $("#span_word").text("你的词:" + word);
@@ -197,6 +201,8 @@ function formStatusSetting(user, gameRole, gameStatus) {
                         $("#button_start").hide();
                     }
                     $("#button_pass").hide();
+                    $("#button_vote").hide();
+                    $("#select_vote").hide();
                     $("#button_white").hide();
             }
         }
@@ -209,6 +215,8 @@ function formStatusSetting(user, gameRole, gameStatus) {
         $("#button_start").hide();
         $("#button_cancel").hide();
         $("#button_pass").hide();
+        $("#button_vote").hide();
+        $("#select_vote").hide();
         $("#button_white").hide();
         $("#button_logout").hide();
         $("#menu_online").show();
@@ -388,4 +396,8 @@ $("#button_start_confirm").click(function() {
     findghost.game.camp.create(function() {
         findghost.game.start(function() {});
     });
+});
+
+$("#menu_rule").click(function() {
+    $("#modal_rule").modal('show');
 });
