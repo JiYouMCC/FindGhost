@@ -312,7 +312,10 @@ $("#button_ready_owner").click(function() {
 $("#button_owner_commit").click(function() {
     var manWord = $("#word_man").val();
     var ghostWord = $("#word_ghost").val();
-    if (manWord && ghostWord) {
+    var error = findghost.game.words.check(manWord, ghostWord);
+    if (error) {
+        findghost.handleError(error);
+    } else {
         findghost.game.role.owner.ready(manWord, ghostWord, function(result) {
             if (result) {
                 $("#modal_owner").modal('hide');
