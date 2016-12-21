@@ -76,10 +76,11 @@ findghost.hall.message.updateCallback(function(snapshot) {
             );
         } else {
             var userDisplay = messages[date].displayName;
-            $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(userDisplay + "：")).append($("<span></span>").text(message)));
+            var color = messages[date].color;
+            $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").attr("style", "color:" + color).text(userDisplay + "：")).append($("<span></span>").attr("style", "color:" + color).text(message)));
         }
     };
-    if ($("#checkbox_autoscroll").is(':checked')){
+    if ($("#checkbox_autoscroll").is(':checked')) {
         $("#messages").scrollTop($("#messages").prop("scrollHeight"));
     }
 });
@@ -133,10 +134,10 @@ function updateVoteSelect() {
     findghost.game.status.get(function(status){
         if (status && status == findghost.GAME_STATUS.ONGOING) {
             findghost.game.role.get(undefined, function(role) {
-                if(role && role == findghost.GAME_ROLE.PLAYER) {
+                if (role && role == findghost.GAME_ROLE.PLAYER) {
                     $("#select_vote").text("");
-                    findghost.game.vote.target.get(function(alivePlayers){
-                        for(uid in alivePlayers) {
+                    findghost.game.vote.target.get(function(alivePlayers) {
+                        for (uid in alivePlayers) {
                             $("#select_vote").append($("<option></option>").attr("value", uid).text(alivePlayers[uid].displayName));
                         }
                     });
@@ -306,7 +307,7 @@ $("#button_update_display_name").click(function() {
 });
 
 $("#button_chat").click(function() {
-    findghost.hall.message.sendChat($("#chat").val(), function() {
+    findghost.hall.message.sendChat($("#chat").val(), $("#input_color").val(), function() {
         $("#chat").val("");
         $("#chat").focus();
     });

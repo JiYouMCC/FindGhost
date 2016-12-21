@@ -143,25 +143,26 @@ var findghost = {
                 GAME: "游戏消息",
                 PLAYER: "玩家发言",
             },
-            send: function(uid, displayName, message, type, callback) {
+            send: function(uid, displayName, message, type, color, callback) {
                 var currentDate = findghost.getCurrentDate();
                 wilddog.sync().ref("/hall/message").child(currentDate).set({
                     "uid": uid,
                     "displayName": displayName,
                     "type": type,
                     "message": message,
+                    "color": color
                 }).then(callback);
             },
             sendSystem: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, undefined, callback);
             },
             sendGame: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, undefined, callback);
             },
-            sendChat: function(message, callback) {
+            sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, callback);
+                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
                 }
             },
             sendPlayer: function(message, callback) {
@@ -188,56 +189,58 @@ var findghost = {
     },
     game: {
         start: function(callback) {
-            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
-            callback();
+            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！", callback);
         },
         end: function(result, winer) {
-            findghost.hall.message.sendGame("游戏结束," + winer + "赢了");
-            findghost.game.words.getAll(function(words) {
-                var manWord = words.manWord;
-                var ghostWord = words.ghostWord;
-                if (manWord && ghostWord) {
-                    findghost.hall.message.sendGame("人词：" + manWord);
-                    findghost.hall.message.sendGame("鬼词：" + ghostWord);
-                }
-
-                findghost.game.camp.man.get(function(men) {
-                    if (men) {
-                        var men_str = "";
-                        var men_count = 0;
-                        for (uid in men) {
-                            if (men_count > 0) {
-                                men_str += "，"
-                            }
-                            men_str += men[uid].displayName;
-                            men_count += 1
-                        }
-                        findghost.hall.message.sendGame("人：" + men_str);
-                    }
-
-                    findghost.game.camp.ghost.get(function(ghosts) {
-                        if (ghosts) {
-                            var ghost_str = "";
-                            var ghost_count = 0;
-                            for (uid in ghosts) {
-                                if (ghost_count > 0) {
-                                    ghost_str += "，"
-                                }
-                                ghost_str += ghosts[uid].displayName;
-                                ghost_count += 1
-                            }
-                            findghost.hall.message.sendGame("鬼：" + ghost_str);
-                        }
-                        findghost.game.words.remove(function() {
-                            findghost.game.role.owner.remove(function() {
-                                findghost.game.user.removeAll(function() {
-                                    findghost.game.camp.remove(function() {
-                                        findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
-                                    })
+            findghost.hall.message.sendGame("游戏结束," + winer + "赢了", function() {
+                findghost.game.words.getAll(function(words) {
+                    var manWord = words.manWord;
+                    var ghostWord = words.ghostWord;
+                    if (manWord && ghostWord) {
+                        findghost.hall.message.sendGame("人词：" + manWord, function() {
+                            findghost.hall.message.sendGame("鬼词：" + ghostWord, function() {
+                                findghost.game.camp.man.get(function(men) {
+                                    if (men) {
+                                        var men_str = "";
+                                        var men_count = 0;
+                                        for (uid in men) {
+                                            if (men_count > 0) {
+                                                men_str += "，"
+                                            }
+                                            men_str += men[uid].displayName;
+                                            men_count += 1
+                                        }
+                                        findghost.hall.message.sendGame("人：" + men_str, function() {
+                                            findghost.game.camp.ghost.get(function(ghosts) {
+                                                if (ghosts) {
+                                                    var ghost_str = "";
+                                                    var ghost_count = 0;
+                                                    for (uid in ghosts) {
+                                                        if (ghost_count > 0) {
+                                                            ghost_str += "，"
+                                                        }
+                                                        ghost_str += ghosts[uid].displayName;
+                                                        ghost_count += 1
+                                                    }
+                                                    findghost.hall.message.sendGame("鬼：" + ghost_str, function() {
+                                                        findghost.game.words.remove(function() {
+                                                            findghost.game.role.owner.remove(function() {
+                                                                findghost.game.user.removeAll(function() {
+                                                                    findghost.game.camp.remove(function() {
+                                                                        findghost.game.status.set(findghost.GAME_STATUS.NOT_START);
+                                                                    })
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                        });
+                                    }
                                 });
                             });
                         });
-                    });
+                    }
                 });
             });
         },
