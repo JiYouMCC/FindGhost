@@ -154,10 +154,10 @@ var findghost = {
                 }).then(callback);
             },
             sendSystem: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, undefined, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, "", callback);
             },
             sendGame: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, undefined, callback);
+                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, "", callback);
             },
             sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
