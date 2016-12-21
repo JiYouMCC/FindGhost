@@ -115,26 +115,6 @@ var findghost = {
         }
     },
     hall: {
-        timestamp: {
-            get: function(callback) {
-                wilddog.sync().ref("/hall/timestamp/").once("value", function(snapshot) {
-                    if (snapshot && snapshot.val()) {
-                        callback(snapshot.val());
-                    } else {
-                        callback(0);
-                    }
-                });
-            },
-            set: function(date, callback) {
-                if (!date) {
-                    date = findghost.getCurrentDate();
-                }
-
-                wilddog.sync().ref("/hall").child("timestamp").set(date).then(function() {
-                    callback();
-                });
-            }
-        },
         user: {
             clear: function() {
                 var user = findghost.user.get();
@@ -192,7 +172,7 @@ var findghost = {
             },
             updateCallback: function(callback) {
                 findghost.hall.timestamp.get(function(timestamp) {
-                    wilddog.sync().ref("/hall/message").orderByKey().startAt(timestamp.toString()).on("value", callback);
+                    wilddog.sync().ref("/hall/message").orderByKey().limitToLast(findghost.showMessageCount).on("value", callback);
                 });
             }
         },
