@@ -666,7 +666,6 @@ var findghost = {
                                                 wilddog.sync().ref("/game/users/" + uid).child("alive").set(value).then(callback);
                                                 break;
                                         }
-                                        callback(undefined);
                                     } else {
                                         callback(undefined);
                                     }
