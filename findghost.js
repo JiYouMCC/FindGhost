@@ -430,8 +430,8 @@ var findghost = {
             },
         },
         status: {
-            set: function(status) {
-                wilddog.sync().ref("/game/").child("status").set(status);
+            set: function(status, callback) {
+                wilddog.sync().ref("/game/").child("status").set(status).then(callback);
             },
             get: function(callback) {
                 wilddog.sync().ref("/game/status").once('value', function(snapshot) {
@@ -590,8 +590,7 @@ var findghost = {
                                         });
                                     }
 
-                                    findghost.game.status.set(findghost.GAME_STATUS.ONGOING);
-                                    callback();
+                                    findghost.game.status.set(findghost.GAME_STATUS.ONGOING, callback);
                                 } else {
                                     findghost.handleError("人数不足，不能发牌");
                                 }
@@ -785,7 +784,10 @@ var findghost = {
                     var displayName = findghost.user.displayName.get();
                     findghost.game.role.player.getAlive(function(alivePlayers) {
                         if (alivePlayers && alivePlayers.hasOwnProperty(uid) && alivePlayers.hasOwnProperty(tid)) {
-                            wilddog.sync().ref("/game/vote").child(uid).set(tid).then(function() {
+                            wilddog.sync().ref("/game/vote").child(uid).set({
+                                uid: tid,
+                                displayName: tDisplayName
+                            }).then(function() {
                                 findghost.hall.message.sendGame("“" + displayName + "”" + "指认“" + tDisplayName + "”是鬼！");
                                 callback();
                             });
@@ -795,6 +797,12 @@ var findghost = {
                     });
                 } else {
                     callback(undefined);
+                }
+            },
+            remove: function(callback) {
+                wilddog.sync().ref("/game/vote").remove()
+                if (callback) {
+                    callback();
                 }
             },
             status: {
@@ -830,11 +838,15 @@ var findghost = {
                         var result = {};
                         findghost.game.vote.get(function(votes) {
                             for (uid in votes) {
-                                var tid = votes[uid];
+                                var tid = votes[uid].uid;
+                                var displayName = votes[uid].displayName;
                                 if (result.hasOwnProperty(tid)) {
-                                    result[tid].append[uid];
+                                    result[tid].count += 1;
                                 } else {
-                                    result[tid] = [uid];
+                                    result[tid] = {
+                                        displayName: displayName,
+                                        count: 1
+                                    };
                                 }
                             }
                             callback(true, result);
