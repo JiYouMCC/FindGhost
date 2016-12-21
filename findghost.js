@@ -318,7 +318,7 @@ var findghost = {
                                     finalResult[uid] = result[uid];
                                 }
                             }
-                            
+
                             callback(finalResult);
                         }
 
@@ -684,7 +684,7 @@ var findghost = {
                                 findghost.game.end(result, winer);
                             }
                         })
-                        callback;
+                        callback();
                     })
                 }
             },
