@@ -656,7 +656,6 @@ var findghost = {
                                     if (role) {
                                         switch (role) {
                                             case findghost.GAME_ROLE.OWNER:
-                                                callback(undefined);
                                                 break;
                                             case findghost.GAME_ROLE.PLAYER:
                                                 wilddog.sync().ref("/game/camp/" + uid).child("alive").set(value).then(function() {
