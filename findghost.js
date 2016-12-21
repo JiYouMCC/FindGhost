@@ -171,9 +171,7 @@ var findghost = {
                 }
             },
             updateCallback: function(callback) {
-                findghost.hall.timestamp.get(function(timestamp) {
-                    wilddog.sync().ref("/hall/message").orderByKey().limitToLast(findghost.showMessageCount).on("value", callback);
-                });
+                wilddog.sync().ref("/hall/message").orderByKey().limitToLast(findghost.showMessageCount).on("value", callback);
             }
         },
         out: function(uid, displayName) {
