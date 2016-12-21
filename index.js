@@ -79,7 +79,9 @@ findghost.hall.message.updateCallback(function(snapshot) {
             $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").text(userDisplay + "：")).append($("<span></span>").text(message)));
         }
     };
-    $("#messages").scrollTop($("#messages").prop("scrollHeight"));
+    if ($("#checkbox_autoscroll").is(':checked')){
+        $("#messages").scrollTop($("#messages").prop("scrollHeight"));
+    }
 });
 
 // login/logout listener
