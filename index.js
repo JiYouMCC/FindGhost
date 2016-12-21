@@ -127,11 +127,12 @@ findghost.game.user.updateCallback(function(users) {
                 $("<span></span>").addClass("badge").text(role)));
         count += 1;
     }
+    updateVoteSelect();
     $("#gamer_count").text(count);
 });
 
 function updateVoteSelect() {
-    findghost.game.status.get(function(status){
+    findghost.game.status.get(function(status) {
         if (status && status == findghost.GAME_STATUS.ONGOING) {
             findghost.game.role.get(undefined, function(role) {
                 if (role && role == findghost.GAME_ROLE.PLAYER) {
@@ -423,4 +424,8 @@ $("#button_start_confirm").click(function() {
 
 $("#menu_rule").click(function() {
     $("#modal_rule").modal('show');
+});
+
+$("#button_vote").click(function() {
+    findghost.game.vote.set($("#select_vote").val(), $("#select_vote option:selected").text(), function() {});
 });

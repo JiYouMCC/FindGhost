@@ -778,15 +778,16 @@ var findghost = {
                     callback(snapshot.val());
                 });
             },
-            set: function(uid, tid, callback) {
-                if (!uid) {
-                    uid = findghost.user.uid.get();
-                }
-
+            set: function(tid, tDisplayName, callback) {
+                var uid = findghost.user.uid.get();
                 if (uid) {
+                    var displayName = findghost.user.displayName.get();
                     findghost.game.role.player.getAlive(function(alivePlayers) {
                         if (alivePlayers && alivePlayers.hasOwnProperty(uid) && alivePlayers.hasOwnProperty(tid)) {
-                            wilddog.sync().ref("/game/vote").child(uid).set(tid).then(callback);
+                            wilddog.sync().ref("/game/vote").child(uid).set(tid).then(function() {
+                                findghost.hall.message.sendGame("“" + displayName + "”" + "指认“" + tDisplayName + "”是鬼！");
+                                callback();
+                            });
                         } else {
                             callback(undefined);
                         }
