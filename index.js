@@ -441,13 +441,24 @@ $("#button_vote").click(function() {
                 for (tid in result) {
                     if (result[tid].count > max) {
                         max = result[tid].count;
-                        max_list = [tid];
+                        max_list = [
+                            [tid, result[tid].displayName]
+                        ];
                     } else if (result[tid].count == max) {
-                        max_list.push(tid);
+                        max_list.push([tid, result[tid].displayName]);
                     }
                 }
-                console.log(max);
-                console.log(max_list);
+                if (max_list.length == 1) {
+                    findghost.game.camp.alive.kill(max_list[0][0], function() {
+                        findghost.hall.message.sendGame("“" + max_list[0][1] + "”" + "就这么被投死了，那么问题来了，Ta到底是不是鬼呢？", function() {
+                            findghost.game.vote.remove();
+                        });
+                    })
+                } else {
+                    findghost.hall.message.sendGame("大家争吵很激烈，不能确定谁是鬼，本次投票作废。", function() {
+                        findghost.game.vote.remove();
+                    });
+                }
             }
         });
     });
