@@ -188,10 +188,8 @@ var findghost = {
     },
     game: {
         start: function(callback) {
-            findghost.hall.timestamp.set(undefined, function() {
-                findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
-                callback();
-            });
+            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！");
+            callback();
         },
         end: function(result, winer) {
             findghost.hall.message.sendGame("游戏结束," + winer + "赢了");
@@ -683,8 +681,8 @@ var findghost = {
                             if (result) {
                                 findghost.game.end(result, winer);
                             }
+                            callback();
                         })
-                        callback();
                     })
                 }
             },
