@@ -317,8 +317,9 @@ var findghost = {
                                 if (result[uid].alive) {
                                     finalResult[uid] = result[uid];
                                 }
-                                callback(finalResult);
                             }
+                            
+                            callback(finalResult);
                         }
 
                     });
