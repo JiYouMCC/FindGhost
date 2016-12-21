@@ -123,12 +123,17 @@ findghost.game.user.updateCallback(function(users) {
         }
         $("#gamer_list").append(
             $("<li></li>").addClass("list-group-item").text(displayName).append(
-                $("<span></span>").addClass(aliveClass)).append(
-                $("<span></span>").addClass("badge").text(role)));
+                $("<span></span>").addClass(aliveClass)
+            ).append(
+                $("<span></span>").attr("id", "gamer_vote_" + uid)
+            ).append(
+                $("<span></span>").addClass("badge").text(role)
+            )
+        );
         count += 1;
     }
-    updateVoteSelect();
     $("#gamer_count").text(count);
+    updateVoteSelect();
 });
 
 function updateVoteSelect() {
@@ -188,6 +193,7 @@ function formStatusSetting(user, gameRole, gameStatus) {
                             $("#button_pass").show();
                             $("#button_vote").show();
                             $("#select_vote").show();
+                            updateVoteSelect();
                             findghost.game.words.get(function(word) {
                                 if (word) {
                                     $("#span_word").text("你的词:" + word);
@@ -427,5 +433,33 @@ $("#menu_rule").click(function() {
 });
 
 $("#button_vote").click(function() {
-    findghost.game.vote.set($("#select_vote").val(), $("#select_vote option:selected").text(), function() {});
+    findghost.game.vote.set($("#select_vote").val(), $("#select_vote option:selected").text(), function() {
+        findghost.game.vote.result(function(status, result) {
+            if (status) {
+                var max = 0;
+                var max_list = [];
+                for (tid in result) {
+                    if (result[tid].count > max) {
+                        max = result[tid].count;
+                        max_list = [tid];
+                    } else if (result[tid].count == max) {
+                        max_list.push(tid);
+                    }
+                }
+                console.log(max);
+                console.log(max_list);
+            }
+        });
+    });
+});
+
+
+findghost.game.vote.updateCallback(function(votes) {
+    $("span[id^='gamer_vote_']").text("");
+    for (uid in votes) {
+        var tid = votes[uid].uid;
+        $("#gamer_vote_" + tid).append(
+            $("<div></div>").addClass("glyphicon glyphicon-hand-left")
+        );
+    }
 });
