@@ -129,6 +129,23 @@ findghost.game.user.updateCallback(function(users) {
     $("#gamer_count").text(count);
 });
 
+function updateVoteSelect() {
+    findghost.game.status.get(function(status){
+        if (status && status == findghost.GAME_STATUS.ONGOING) {
+            findghost.game.role.get(undefined, function(role) {
+                if(role && role == findghost.GAME_ROLE.PLAYER) {
+                    $("#select_vote").text("");
+                    findghost.game.vote.target.get(function(alivePlayers){
+                        for(uid in alivePlayers) {
+                            $("#select_vote").append($("<option></option>").attr("value", uid).text(alivePlayers[uid].displayName));
+                        }
+                    });
+                }
+            });
+        }
+    })
+}
+
 // game status listener
 findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
