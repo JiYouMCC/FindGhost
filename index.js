@@ -190,18 +190,32 @@ function formStatusSetting(user, gameRole, gameStatus) {
                     $("#button_ready_white").hide();
                     if (gameRole) {
                         if (gameRole == findghost.GAME_ROLE.PLAYER) {
-                            $("#button_pass").show();
-                            $("#button_vote").show();
-                            $("#select_vote").show();
-                            updateVoteSelect();
+                            findghost.game.camp.alive.get(user.uid, function(alive) {
+                                if (alive) {
+                                    $("#button_pass").show();
+                                    $("#button_vote").show();
+                                    $("#select_vote").show();
+                                    updateVoteSelect();
+                                }
+                            });
                             findghost.game.words.get(function(word) {
                                 if (word) {
                                     $("#span_word").text("你的词:" + word);
                                 }
-                            })
+                            });
                         } else if (gameRole == findghost.GAME_ROLE.WHITE) {
-                            $("#button_white").show();
-                            $("#button_cancel").show();
+                            findghost.game.camp.alive.get(user.uid, function(alive) {
+                                if (alive) {
+                                    $("#button_white").show();
+                                    $("#button_cancel").show();
+                                }
+
+                                findghost.game.words.length(function(length) {
+                                    if (length) {
+                                        $("#span_word").text("字数:" + length);
+                                    }
+                                })
+                            });
                         }
                     } else {
                         $("#button_ready_white").show();
@@ -449,11 +463,11 @@ $("#button_vote").click(function() {
                     }
                 }
                 if (max_list.length == 1) {
-                    findghost.game.camp.alive.kill(max_list[0][0], function() {
-                        findghost.hall.message.sendGame("“" + max_list[0][1] + "”" + "就这么被投死了，那么问题来了，Ta到底是不是鬼呢？", function() {
+                    findghost.hall.message.sendGame("“" + max_list[0][1] + "”" + "就这么被投死了，那么问题来了，Ta到底是不是鬼呢？", function() {
+                        findghost.game.camp.alive.kill(max_list[0][0], function() {
                             findghost.game.vote.remove();
                         });
-                    })
+                    });
                 } else {
                     findghost.hall.message.sendGame("大家争吵很激烈，不能确定谁是鬼，本次投票作废。", function() {
                         findghost.game.vote.remove();
@@ -473,4 +487,17 @@ findghost.game.vote.updateCallback(function(votes) {
             $("<div></div>").addClass("glyphicon glyphicon-hand-left")
         );
     }
+});
+
+$("#button_white_commit").click(function() {
+    $("#button_white_commit").button('loading');
+    findghost.game.words.guess($("#word_white").val(), function() {
+        $("#button_white_commit").button('reset');
+        $('#modal_white').modal('hide');
+        findghost.game.status.get(function(gameStatus) {
+            findghost.game.role.get(undefined, function(gameRole) {
+                formStatusSetting(findghost.user.get(), gameRole, gameStatus);
+            });
+        });
+    })
 });

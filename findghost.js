@@ -191,7 +191,7 @@ var findghost = {
         start: function(callback) {
             findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！", callback);
         },
-        end: function(result, winer) {
+        end: function(winer) {
             findghost.hall.message.sendGame("游戏结束," + winer + "赢了", function() {
                 findghost.game.words.getAll(function(words) {
                     var manWord = words.manWord;
@@ -463,6 +463,21 @@ var findghost = {
             }
         },
         words: {
+            length: function(callback) {
+                findghost.game.role.get(undefined, function(gameRole) {
+                    if (gameRole && gameRole == findghost.GAME_ROLE.WHITE) {
+                        wilddog.sync().ref("/game/words/ghostWord").once('value', function(snapshot) {
+                            if (snapshot && snapshot.val()) {
+                                callback(snapshot.val().length);
+                            } else {
+                                callback(0);
+                            }
+                        });
+                    } else {
+                        callback(-1);
+                    }
+                });
+            },
             get: function(callback) {
                 findghost.game.role.get(undefined, function(gameRole) {
                     switch (gameRole) {
@@ -529,6 +544,44 @@ var findghost = {
                 } else {
                     return "词不能为空！";
                 }
+            },
+            guess: function(word, callback) {
+                findghost.game.status.get(function(status) {
+                    if (status && status == findghost.GAME_STATUS.ONGOING) {
+                        findghost.game.role.get(undefined, function(gameRole) {
+                            if (gameRole && gameRole == findghost.GAME_ROLE.WHITE) {
+                                findghost.game.camp.alive.get(undefined, function(alive) {
+                                    if (alive) {
+                                        var displayName = findghost.user.displayName.get();
+                                        var uid = findghost.user.uid.get();
+                                        findghost.hall.message.sendGame("小白“" + displayName + "”猜人词是“" + word + "”", function() {
+                                            wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
+                                                if (snapshot && snapshot.val()) {
+                                                    if (snapshot.val() == word) {
+                                                        findghost.game.end(findghost.GAME_ROLE.WHITE);
+                                                        callback();
+                                                    } else {
+                                                        findghost.hall.message.sendGame("天雷滾滾，一道闪电把小白“" + displayName + "”劈死了……", function() {
+                                                            findghost.game.camp.alive.kill(uid, function() {
+                                                                callback();
+                                                            });
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    } else {
+                                        callback();
+                                    }
+                                });
+                            } else {
+                                callback();
+                            }
+                        });
+                    } else {
+                        callback();
+                    }
+                });
             }
         },
         camp: {
@@ -623,7 +676,7 @@ var findghost = {
                                                 break;
                                             case findghost.GAME_ROLE.WHITE:
                                                 wilddog.sync().ref("/game/users/" + uid + "/alive").once('value', function(snapshot) {
-                                                    if (snapshot.val() && snapshot.val() == false) {
+                                                    if (snapshot && snapshot.val() == false) {
                                                         callback(false);
                                                     } else {
                                                         callback(true);
@@ -679,7 +732,7 @@ var findghost = {
                     findghost.game.camp.alive.set(uid, false, function() {
                         findghost.game.camp.result.check(function(result, winer) {
                             if (result) {
-                                findghost.game.end(result, winer);
+                                findghost.game.end(winer);
                             }
                             callback();
                         })
