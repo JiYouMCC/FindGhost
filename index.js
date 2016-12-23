@@ -115,16 +115,14 @@ findghost.game.user.updateCallback(function(users) {
         var displayName = users[uid].displayName;
         var role = users[uid].role;
         var alive = users[uid].alive;
-        var aliveClass = "glyphicon";
+        var aliveClass = "list-group-item";
         if (alive == true) {
-            aliveClass += " glyphicon-ok";
+            aliveClass += " list-group-item-success";
         } else if (alive == false) {
-            aliveClass += " glyphicon-remove";
+            aliveClass += " list-group-item-danger";
         }
         $("#gamer_list").append(
-            $("<li></li>").addClass("list-group-item").text(displayName).append(
-                $("<span></span>").addClass(aliveClass)
-            ).append(
+            $("<li></li>").addClass(aliveClass).text(displayName).append(
                 $("<span></span>").attr("id", "gamer_vote_" + uid)
             ).append(
                 $("<span></span>").addClass("badge").text(role)

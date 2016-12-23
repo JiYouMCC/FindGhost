@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>游戏记录备份</title>
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+</head>
+<body>
+<div id="messages"></div>
+</body>
+<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>
+  <script src="findghost.js"></script>
+  <script type="text/javascript">
+    function addMessage(messages, flag) {
+        var count = 0;
+        var last = 0;
+        for (date in messages) {
+            count += 1;
+            if(flag) {
+                flag= false;
+                continue;
+            }            
+            last = date
+            var message = messages[date].message;
+            var messageType = messages[date].type;
+            var dateTime = new Date(parseInt(date));
+            if (messageType == findghost.hall.message.TYPE.SYSTEM) {
+                $("#messages").append(
+                    $("<div></div>").addClass("text-danger").append(
+                        $("<span></span>").text("【系统消息】").append(
+                            $("<span></span>").text(message)
+                        )
+                    )
+                );
+            } else if (messageType == findghost.hall.message.TYPE.GAME) {
+                $("#messages").append(
+                    $("<div></div>").addClass("text-info").append(
+                        $("<span></span>").text("【游戏信息】").append(
+                            $("<span></span>").text(message)
+                        )
+                    )
+                );
+            } else {
+                var userDisplay = messages[date].displayName;
+                var color = messages[date].color;
+                $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").attr("style", "color:" + color).text(userDisplay + "：")).append($("<span></span>").attr("style", "color:" + color).text(message)));
+            }
+        }
+        return [count, last];
+    }
+
+    findghost.init("findghost");
+    $("#messages").text("");
+    var count = undefined;
+    var last = undefined;
+    wilddog.sync().ref("/hall/message").limitToFirst(500).once("value", function(snapshot){
+        var result = addMessage(snapshot.val());
+        count = result[0];
+        last = result[1];
+    }).then(t);
+
+    function t(){
+        if (count == 500) {
+            console.log(last);
+            wilddog.sync().ref("/hall/message").orderByKey().startAt(last).limitToFirst(500).once("value",function(snapshot){
+                result = addMessage(snapshot.val(), true);
+                count = result[0];
+                last = result[1];
+            }).then(t);
+        } else {
+            wilddog.sync().ref("/hall/message").remove();
+            console.log("清理完毕");
+        }
+    }
+  </script>
+</html>
