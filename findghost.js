@@ -162,11 +162,8 @@ var findghost = {
             sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, function(){
-                        findghost.game.words.expose(message, function(expose){
-                            callback();
-                        })
-                    });
+                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
+                    findghost.game.words.expose(message, function(){});
                 }
             },
             sendPlayer: function(message, callback) {
