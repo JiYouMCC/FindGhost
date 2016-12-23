@@ -162,7 +162,11 @@ var findghost = {
             sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
+                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, function(){
+                        findghost.game.words.expose(message, function(expose){
+                            callback();
+                        })
+                    });
                 }
             },
             sendPlayer: function(message, callback) {
@@ -580,6 +584,45 @@ var findghost = {
                         });
                     } else {
                         callback();
+                    }
+                });
+            },
+            expose: function(message, callback) {
+                findghost.game.status.get(function(status){
+                    if (status && status == findghost.GAME_STATUS.ONGOING) {
+                        findghost.game.role.get(undefined, function(gameRole) {
+                            if (gameRole && gameRole == findghost.GAME_ROLE.PLAYER) {
+                                findghost.game.camp.alive.get(undefined, function(alive) {
+                                    if(alive) {
+                                        findghost.game.words.get(function(word) {
+                                            if (word) {
+                                                for (c in word) {
+                                                    if (message.indexOf(word[c]) >= 0){
+                                                        var displayName = findghost.user.displayName.get();
+                                                        var uid = findghost.user.uid.get();
+                                                        findghost.hall.message.sendGame("“" + displayName + "”发出了一身嚎叫，筋脉尽断，自爆而亡！", function() {
+                                                            findghost.game.camp.alive.kill(uid, function() {
+                                                                callback(true);
+                                                            });
+                                                        });
+                                                        break;
+                                                    }
+                                                    callback(false);
+                                                }
+                                            } else {
+                                                callback(false);
+                                            }
+                                        });
+                                    }else {
+                                        callback(false);
+                                    }
+                                });
+                            } else {
+                                callback(false);
+                            }
+                         });
+                    } else {
+                        callback(false);
                     }
                 });
             }
