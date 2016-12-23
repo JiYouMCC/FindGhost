@@ -734,6 +734,8 @@ var findghost = {
                         findghost.game.camp.result.check(function(result, winer) {
                             if (result) {
                                 findghost.game.end(winer);
+                            } else {
+                                findghost.hall.message.sendGame("游戏继续进行。");
                             }
                             callback();
                         })
