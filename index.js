@@ -1,5 +1,5 @@
 // init wilddog
-findghost.init("findghost");
+findghost.init("zhuagui");
 
 // override error handler
 findghost.handleError = function(error) {
