@@ -437,7 +437,11 @@ var findghost = {
             get: function(callback) {
                 wilddog.sync().ref("/game/status").once('value', function(snapshot) {
                     var result = snapshot.val();
-                    callback(result);
+                    if (result) {
+                        callback(result);
+                    } else {
+                        callback(findghost.GAME_STATUS.NOT_START);
+                    }
                 });
             },
             updateCallback: function(callback) {
