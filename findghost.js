@@ -37,6 +37,14 @@ var findghost = {
     formatDate: function(date) {
         return ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + " ";
     },
+    formatString: function() {
+        var str = this;
+        for (var i = 0; i < arguments.length; i++) {
+            var reg = new RegExp("\\{" + i + "\\}", "gm");
+            str = str.replace(reg, arguments[i]);
+        }
+        return str;
+    },
     user: {
         displayName: {
             get: function(user) {
@@ -58,7 +66,7 @@ var findghost = {
                     wilddog.auth().currentUser.updateProfile({
                         displayName: displayName
                     }).then(function(user) {
-                        findghost.hall.message.sendSystem("“" + oldDisplay + "”改名为“" + displayName + "”");
+                        findghost.hall.message.sendSystem(findghost.hall.message.SYSTEM_MESSAGE.RENAME, [oldDisplay, displayName]);
                         callback(user);
                     }).catch(function(error) {
                         findghost.handleError(error);
@@ -74,7 +82,7 @@ var findghost = {
             var user = findghost.user.get();
             if (!user) {
                 wilddog.auth().createUserWithEmailAndPassword(email, password).then(function(user) {
-                    findghost.hall.message.sendSystem("“" + user.email.split('@')[0] + "”" + "加入了游戏");
+                    findghost.hall.message.sendSystem(findghost.hall.message.SYSTEM_MESSAGE.REGISTER, [user.email.split('@')[0]]);
                     callback(user);
                 }).catch(function(error) {
                     findghost.handleError(error);
@@ -86,7 +94,7 @@ var findghost = {
             var user = findghost.user.get();
             if (!user) {
                 wilddog.auth().signInWithEmailAndPassword(email, password).then(function(user) {
-                    findghost.hall.message.sendSystem("“" + user.displayName + "”" + "回来了");
+                    findghost.hall.message.sendSystem(findghost.hall.message.SYSTEM_MESSAGE.LOGIN, [findghost.user.displayName.get()]);
                     callback(user);
                 }).catch(function(error) {
                     findghost.handleError(error);
@@ -143,34 +151,103 @@ var findghost = {
                 GAME: 2,
                 PLAYER: 3,
             },
+            SYSTEM_MESSAGE: {
+                LEAVE: 0,
+                RENAME: 1,
+                REGISTER: 2,
+                LOGIN: 3
+            },
+            SYSTEM_MESSAGE_TXT: [
+                "“{0}”离开了。",
+                "“{0}”改名为“{1}”。",
+                "“{0}”加入了游戏。",
+                "“{0}”回来了。"
+            ],
+            GAME_MESSAGE: {
+                START: 0,
+                END: 1,
+                MAN_WORD: 2,
+                GHOST_WORD: 3,
+                MEN: 4,
+                GHOST: 5,
+                READY_PLAY: 6,
+                READY_WHITE: 7,
+                READY_OWNER: 8,
+                GUESS_WORD: 9,
+                GUESS_FAIL: 10,
+                EXPOSE: 11,
+                CONTINUE: 12,
+                VOTE: 13,
+                VOTE_RESULT: 14,
+                VOTE_CONTINUE: 15,
+                OWNER_GIVE_UP: 16,
+                PLAYER_GIVE_UP: 17,
+                WHITE_GIVE_UP: 18,
+                OWNER_LEAVE: 19,
+                PLAYER_RUN: 20,
+                PLAYER_LEAVE: 21,
+                WHITE_RUN: 22,
+                WHITE_LEAVE: 23
+            },
+            GAME_MESSAGE_TXT: [
+                "游戏开始了，请大家确认自己发到的词！",
+                "游戏结束, {0}赢了！",
+                "人词：{0}",
+                "鬼词：{0}",
+                "人：{0}",
+                "鬼：{0}",
+                "“{0}”要抓鬼！",
+                "“{0}”要当小白！",
+                "“{0}”已经提交了词，要当法官。",
+                "小白“{0}”猜人词是“{1}”。",
+                "天雷滚滚，一道闪电把小白“{0}”劈死了……",
+                "“{0}”发出了一身嚎叫，筋脉尽断，自爆而亡！",
+                "游戏继续进行。",
+                "“{0}”指认“{1}”是鬼！",
+                "“{0}”就这么被投死了，那么问题来了，Ta到底是不是鬼呢？",
+                "大家争吵很激烈，不能确定谁是鬼，本次投票作废。",
+                "“{0}”不当法官了。",
+                "“{0}”不玩了。",
+                "“{0}”不当小白了。",
+                "法官“{0}”很无聊，走了。",
+                "玩家“{0}”逃跑了，Ta在逃跑的路上被活活呸死~~",
+                "玩家“{0}”拖着自己的尸体走了……",
+                "小白“{0}”放弃了……",
+                "小白“{0}”拖着自己的尸体走了……"
+            ],
             send: function(uid, displayName, message, type, color, callback) {
                 var messageRef = wilddog.sync().ref("/hall/message");
                 messageRef.push({
                     "uid": uid,
                     "uname": displayName,
                     "type": type,
-                    "date":wilddog.sync().ServerValue.TIMESTAMP,
+                    "date": wilddog.sync().ServerValue.TIMESTAMP,
                     "msg": message,
                     "color": color
                 }).then(callback);
             },
-            sendSystem: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.SYSTEM, "", callback);
+            sendSystem: function(messageCode, params, callback) {
+                findghost.hall.message.send("", params, messageCode, findghost.hall.message.TYPE.SYSTEM, "", callback);
             },
-            sendGame: function(message, callback) {
-                findghost.hall.message.send("", "", message, findghost.hall.message.TYPE.GAME, "", callback);
+            sendGame: function(messageCode, params, callback) {
+                findghost.hall.message.send("", params, messageCode, findghost.hall.message.TYPE.GAME, "", callback);
             },
             sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
                 if (user) {
                     findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
-                    findghost.game.words.expose(message, function(){});
+                    findghost.game.words.expose(message, function() {});
                 }
             },
             sendPlayer: function(message, callback) {
                 var user = findghost.user.get();
                 if (user) {
                     findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.PLAYER, callback);
+                }
+            },
+            parseMessage: function(messages, messageCode, params) {
+                if (messageCode >= 0 && messageCode < messages.length) {
+                    return findghost.formatString.apply(messages[messageCode], params);
                 }
             },
             updateCallback: function(callback) {
@@ -180,7 +257,7 @@ var findghost = {
         out: function(uid, displayName) {
             findghost.game.out(uid, displayName);
             wilddog.sync().ref("/hall/users/" + uid).remove();
-            findghost.hall.message.sendSystem("“" + displayName + "”" + "离开了");
+            findghost.hall.message.sendSystem(findghost.hall.message.SYSTEM_MESSAGE.LEAVE, [displayName]);
         },
         in : function(uid, displayName) {
             wilddog.sync().ref("/hall/users/").child(uid).set({
@@ -191,16 +268,16 @@ var findghost = {
     },
     game: {
         start: function(callback) {
-            findghost.hall.message.sendGame("游戏开始了，请大家确认自己发到的词！", callback);
+            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.START, undefined, callback);
         },
         end: function(winer) {
-            findghost.hall.message.sendGame("游戏结束," + winer + "赢了", function() {
+            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.END, [winer], function() {
                 findghost.game.words.getAll(function(words) {
                     var manWord = words.manWord;
                     var ghostWord = words.ghostWord;
                     if (manWord && ghostWord) {
-                        findghost.hall.message.sendGame("人词：" + manWord, function() {
-                            findghost.hall.message.sendGame("鬼词：" + ghostWord, function() {
+                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.MAN_WORD, [manWord], function() {
+                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.GHOST_WORD, [ghostWord], function() {
                                 findghost.game.camp.man.get(function(men) {
                                     if (men) {
                                         var men_str = "";
@@ -212,7 +289,7 @@ var findghost = {
                                             men_str += men[uid].displayName;
                                             men_count += 1
                                         }
-                                        findghost.hall.message.sendGame("人：" + men_str, function() {
+                                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.MEN, [men_str], function() {
                                             findghost.game.camp.ghost.get(function(ghosts) {
                                                 if (ghosts) {
                                                     var ghost_str = "";
@@ -224,7 +301,7 @@ var findghost = {
                                                         ghost_str += ghosts[uid].displayName;
                                                         ghost_count += 1
                                                     }
-                                                    findghost.hall.message.sendGame("鬼：" + ghost_str, function() {
+                                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.GHOST, [ghost_str], function() {
                                                         findghost.game.words.remove(function() {
                                                             findghost.game.role.owner.remove(function() {
                                                                 findghost.game.user.removeAll(function() {
@@ -289,7 +366,7 @@ var findghost = {
                                 var displayName = findghost.user.displayName.get();
                                 findghost.game.role.set(uid, displayName, findghost.GAME_ROLE.PLAYER, function() {
                                     findghost.game.status.set(findghost.GAME_STATUS.READY);
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "要抓鬼");
+                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.READY_PLAY, [displayName]);
                                 });
                             }
                         });
@@ -348,7 +425,7 @@ var findghost = {
                                             findghost.game.status.set(findghost.GAME_STATUS.READY);
                                         }
                                     })
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "要当小白");
+                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.READY_WHITE, [displayName]);
                                 });
                             }
                         });
@@ -395,7 +472,7 @@ var findghost = {
                                     findghost.game.role.owner.set(uid, displayName, function() {
                                         findghost.game.words.set(manWord, ghostWord, function() {
                                             findghost.game.status.set(findghost.GAME_STATUS.READY);
-                                            findghost.hall.message.sendGame("“" + displayName + "”" + "已经提交了词，要当法官");
+                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.READY_OWNER, [displayName]);
                                             callback(true);
                                         });
                                     });
@@ -556,14 +633,14 @@ var findghost = {
                                     if (alive) {
                                         var displayName = findghost.user.displayName.get();
                                         var uid = findghost.user.uid.get();
-                                        findghost.hall.message.sendGame("小白“" + displayName + "”猜人词是“" + word + "”", function() {
+                                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.GUESS_WORD, [displayName, word], function() {
                                             wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
                                                 if (snapshot && snapshot.val()) {
                                                     if (snapshot.val() == word) {
                                                         findghost.game.end(findghost.GAME_ROLE.WHITE);
                                                         callback();
                                                     } else {
-                                                        findghost.hall.message.sendGame("天雷滾滾，一道闪电把小白“" + displayName + "”劈死了……", function() {
+                                                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.GUESS_FAIL, [displayName], function() {
                                                             findghost.game.camp.alive.kill(uid, function() {
                                                                 callback();
                                                             });
@@ -586,19 +663,19 @@ var findghost = {
                 });
             },
             expose: function(message, callback) {
-                findghost.game.status.get(function(status){
+                findghost.game.status.get(function(status) {
                     if (status && status == findghost.GAME_STATUS.ONGOING) {
                         findghost.game.role.get(undefined, function(gameRole) {
                             if (gameRole && gameRole == findghost.GAME_ROLE.PLAYER) {
                                 findghost.game.camp.alive.get(undefined, function(alive) {
-                                    if(alive) {
+                                    if (alive) {
                                         findghost.game.words.get(function(word) {
                                             if (word) {
                                                 for (c in word) {
-                                                    if (message.indexOf(word[c]) >= 0){
+                                                    if (message.indexOf(word[c]) >= 0) {
                                                         var displayName = findghost.user.displayName.get();
                                                         var uid = findghost.user.uid.get();
-                                                        findghost.hall.message.sendGame("“" + displayName + "”发出了一身嚎叫，筋脉尽断，自爆而亡！", function() {
+                                                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.EXPOSE, [displayName], function() {
                                                             findghost.game.camp.alive.kill(uid, function() {
                                                                 callback(true);
                                                             });
@@ -611,14 +688,14 @@ var findghost = {
                                                 callback(false);
                                             }
                                         });
-                                    }else {
+                                    } else {
                                         callback(false);
                                     }
                                 });
                             } else {
                                 callback(false);
                             }
-                         });
+                        });
                     } else {
                         callback(false);
                     }
@@ -776,7 +853,7 @@ var findghost = {
                             if (result) {
                                 findghost.game.end(winer);
                             } else {
-                                findghost.hall.message.sendGame("游戏继续进行。");
+                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.CONTINUE);
                             }
                             callback();
                         })
@@ -848,9 +925,9 @@ var findghost = {
         vote: {
             callback: undefined,
             STATUS: {
-                NOT_START: "未开始",
-                IN_PROGRESS: "投票中",
-                DONE: "已完成"
+                NOT_START: 0,
+                IN_PROGRESS: 1,
+                DONE: 2
             },
             target: {
                 get: function(callback) {
@@ -884,7 +961,7 @@ var findghost = {
                                 uid: tid,
                                 displayName: tDisplayName
                             }).then(function() {
-                                findghost.hall.message.sendGame("“" + displayName + "”" + "指认“" + tDisplayName + "”是鬼！");
+                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE, [displayName, tDisplayName]);
                                 callback();
                             });
                         } else {
@@ -945,10 +1022,38 @@ var findghost = {
                                     };
                                 }
                             }
-                            callback(true, result);
+
+                            var max = 0;
+                            var max_list = [];
+                            for (tid in result) {
+                                if (result[tid].count > max) {
+                                    max = result[tid].count;
+                                    max_list = [
+                                        [tid, result[tid].displayName]
+                                    ];
+                                } else if (result[tid].count == max) {
+                                    max_list.push([tid, result[tid].displayName]);
+                                }
+                            }
+                            if (max_list.length == 1) {
+                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE_RESULT, [max_list[0][1]], function() {
+                                    findghost.game.camp.alive.kill(max_list[0][0], function() {
+                                        findghost.game.vote.remove();
+                                    });
+                                });
+                            } else {
+                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE_CONTINUE, "", function() {
+                                    findghost.game.vote.remove();
+                                });
+                            }
+                            if (callback) {
+                                callback(true);
+                            }
                         });
                     } else {
-                        callback(false, undefined);
+                        if (callback) {
+                            callback(false);
+                        }
                     }
                 });
             },
@@ -981,15 +1086,15 @@ var findghost = {
                             switch (role) {
                                 case findghost.GAME_ROLE.OWNER:
                                     findghost.game.role.owner.remove(function() {
-                                        findghost.hall.message.sendGame("“" + displayName + "”" + "不当法官了");
+                                        findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.OWNER_GIVE_UP, [displayName]);
                                         findghost.game.words.remove(function() {});
                                     });
                                     break;
                                 case findghost.GAME_ROLE.PLAYER:
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "不玩了");
+                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_GIVE_UP, [displayName]);
                                     break;
                                 case findghost.GAME_ROLE.WHITE:
-                                    findghost.hall.message.sendGame("“" + displayName + "”" + "不当小白了");
+                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.WHITE_GIVE_UP, [displayName]);
                                     break;
                             }
                             wilddog.sync().ref("/game/users/" + uid).remove();
@@ -998,16 +1103,16 @@ var findghost = {
                         if (role) {
                             switch (role) {
                                 case findghost.GAME_ROLE.OWNER:
-                                    findghost.hall.message.sendGame("法官“" + displayName + "”" + "很无聊，走了");
+                                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.OWNER_LEAVE, [displayName]);
                                     break;
                                 case findghost.GAME_ROLE.PLAYER:
                                     findghost.game.camp.alive.get(uid, function(result) {
                                         if (result) {
                                             findghost.game.camp.alive.kill(uid, function() {
-                                                findghost.hall.message.sendGame("玩家“" + displayName + "”" + "逃跑了，逃跑的路上被活活呸死");
+                                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_RUN, [displayName]);
                                             })
                                         } else {
-                                            findghost.hall.message.sendGame("玩家“" + displayName + "”" + "拖着自己的尸体走了");
+                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_LEAVE, displayName);
                                         }
                                     })
                                     break;
@@ -1015,11 +1120,11 @@ var findghost = {
                                     findghost.game.camp.alive.get(uid, function(result) {
                                         if (result) {
                                             findghost.game.camp.alive.kill(uid, function() {
-                                                findghost.hall.message.sendGame("小白“" + displayName + "”" + "放弃了");
+                                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.WHITE_RUN, [displayName]);
                                                 wilddog.sync().ref("/game/users/" + uid).remove()
                                             })
                                         } else {
-                                            findghost.hall.message.sendGame("小白“" + displayName + "”" + "拖着自己的尸体走了");
+                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.WHITE_LEAVE, [displayName]);
                                         }
                                     });
                                     break;

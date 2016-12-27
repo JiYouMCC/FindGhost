@@ -61,18 +61,22 @@ findghost.hall.message.updateCallback(function(snapshot) {
         var messageType = messageInfo.type;
         var dateTime = new Date(parseInt(date));
         if (messageType == findghost.hall.message.TYPE.SYSTEM) {
+            var params = messageInfo.uname;
+            var messageTxt = findghost.hall.message.parseMessage(findghost.hall.message.SYSTEM_MESSAGE_TXT, message, params);
             $("#messages").append(
                 $("<div></div>").addClass("text-danger").append(
                     $("<span></span>").text("【系统消息】").append(
-                        $("<span></span>").text(message)
+                        $("<span></span>").text(messageTxt)
                     )
                 )
             );
         } else if (messageType == findghost.hall.message.TYPE.GAME) {
+            var params = messageInfo.uname;
+            var messageTxt = findghost.hall.message.parseMessage(findghost.hall.message.GAME_MESSAGE_TXT, message, params);
             $("#messages").append(
                 $("<div></div>").addClass("text-info").append(
                     $("<span></span>").text("【游戏信息】").append(
-                        $("<span></span>").text(message)
+                        $("<span></span>").text(messageTxt)
                     )
                 )
             );
@@ -448,33 +452,7 @@ $("#menu_rule").click(function() {
 
 $("#button_vote").click(function() {
     findghost.game.vote.set($("#select_vote").val(), $("#select_vote option:selected").text(), function() {
-        findghost.game.vote.result(function(status, result) {
-            if (status) {
-                var max = 0;
-                var max_list = [];
-                for (tid in result) {
-                    if (result[tid].count > max) {
-                        max = result[tid].count;
-                        max_list = [
-                            [tid, result[tid].displayName]
-                        ];
-                    } else if (result[tid].count == max) {
-                        max_list.push([tid, result[tid].displayName]);
-                    }
-                }
-                if (max_list.length == 1) {
-                    findghost.hall.message.sendGame("“" + max_list[0][1] + "”" + "就这么被投死了，那么问题来了，Ta到底是不是鬼呢？", function() {
-                        findghost.game.camp.alive.kill(max_list[0][0], function() {
-                            findghost.game.vote.remove();
-                        });
-                    });
-                } else {
-                    findghost.hall.message.sendGame("大家争吵很激烈，不能确定谁是鬼，本次投票作废。", function() {
-                        findghost.game.vote.remove();
-                    });
-                }
-            }
-        });
+        findghost.game.vote.result();
     });
 });
 
