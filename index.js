@@ -1,5 +1,5 @@
 // init wilddog
-findghost.init("findghost");
+findghost.init("zhuagui");
 
 // override error handler
 findghost.handleError = function(error) {
@@ -54,9 +54,11 @@ findghost.hall.user.updateCallback(function(snapshot) {
 findghost.hall.message.updateCallback(function(snapshot) {
     $("#messages").text("");
     var messages = snapshot.val();
-    for (date in messages) {
-        var message = messages[date].message;
-        var messageType = messages[date].type;
+    for (key in messages) {
+        var messageInfo = messages[key];
+        var date = messageInfo.date;
+        var message = messageInfo.msg;
+        var messageType = messageInfo.type;
         var dateTime = new Date(parseInt(date));
         if (messageType == findghost.hall.message.TYPE.SYSTEM) {
             $("#messages").append(
@@ -75,8 +77,8 @@ findghost.hall.message.updateCallback(function(snapshot) {
                 )
             );
         } else {
-            var userDisplay = messages[date].displayName;
-            var color = messages[date].color;
+            var userDisplay = messageInfo.uname;
+            var color = messageInfo.color;
             $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").attr("style", "color:" + color).text(userDisplay + "：")).append($("<span></span>").attr("style", "color:" + color).text(message)));
         }
     };

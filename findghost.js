@@ -138,18 +138,19 @@ var findghost = {
         },
         message: {
             TYPE: {
-                SYSTEM: "系统消息",
-                CHAT: "聊天消息",
-                GAME: "游戏消息",
-                PLAYER: "玩家发言",
+                SYSTEM: 0,
+                CHAT: 1,
+                GAME: 2,
+                PLAYER: 3,
             },
             send: function(uid, displayName, message, type, color, callback) {
-                var currentDate = findghost.getCurrentDate();
-                wilddog.sync().ref("/hall/message").child(currentDate).set({
+                var messageRef = wilddog.sync().ref("/hall/message");
+                messageRef.push({
                     "uid": uid,
-                    "displayName": displayName,
+                    "uname": displayName,
                     "type": type,
-                    "message": message,
+                    "date":wilddog.sync().ServerValue.TIMESTAMP,
+                    "msg": message,
                     "color": color
                 }).then(callback);
             },
