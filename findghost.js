@@ -199,7 +199,7 @@ var findghost = {
                 WHITE_LEAVE: 23
             },
             GAME_MESSAGE_TXT: [
-                "游戏开始了，请大家确认自己发到的词！",
+                "游戏开始了，请大家确认自己发到的词！现在场上出现了{0}个鬼，它们和{1}个人混在一起，但是谁都不知道自己是人还是鬼，大家加油把它们抓出来吧！",
                 "游戏结束, {0}赢了！",
                 "人词：{0}",
                 "鬼词：{0}",
@@ -277,7 +277,11 @@ var findghost = {
     },
     game: {
         start: function(callback) {
-            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.START, undefined, callback);
+            findghost.game.camp.man.count(function(manCount) {
+                findghost.game.camp.ghost.count(function(ghostCount) {
+                    findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.START, [ghostCount, manCount], callback);
+                });
+            });
         },
         end: function(winer) {
             findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.END, [winer], function() {
