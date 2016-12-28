@@ -7,6 +7,20 @@
     <title>抓鬼</title>
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+    <style type="text/css">
+      #messages {
+        overflow-y: auto
+      }
+
+      #input_color {
+        width: 53px; 
+        padding: 0 2px;
+      }
+
+      #div_chat {
+        width: 80%;
+      }
+    </style>
   </head>
   <body>
     <nav id="nav" class="navbar navbar-default" role="navigation">
@@ -25,11 +39,18 @@
             <li>
               <a id="menu_rule" href="#" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
             </li>
-            <li>
-              <a href="/" role="button" aria-haspopup="true" aria-expanded="false">游戏记录</a>
+            <li class="disabled">
+              <a href="/" class="disabled" role="button" aria-haspopup="true" aria-expanded="false">游戏记录</a>
             </li>
-            <li>
-              <a href="https://github.com/JiYouMCC/FindGhost/commits/master" target="_blank" role="button" aria-haspopup="true" aria-expanded="false">更新记录</a>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">开发相关<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a data-toggle="tooltip" data-placement="bottom" title="Github repository" href="https://github.com/JiYouMCC/FindGhost/" target="_blank">源代码</a></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" title="Github commits" href="https://github.com/JiYouMCC/FindGhost/commits/master" target="_blank">更新记录</a></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" title="有任何建议或者报错请在Issues版面报Issue" href="https://github.com/JiYouMCC/FindGhost/issues" target="_blank">建议和反馈</a></li>
+                <li class="divider"></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/JiYouMCC" target="_blank">联系作者</a></li>
+              </ul>
             </li>
           </ul>
           <ul id="menu_online" class="nav navbar-nav navbar-right">
@@ -47,20 +68,20 @@
       <div class="row">
         <div class="col-md-9">
           <div id="left_pannel" class="panel panel-default">
-          <div id="panel_title" class="panel-heading">游戏<span id="span_game_status">未开始</span> <span id="span_word" class="label label-danger"></span><label class="checkbox-inline" style="float:right">
+          <div id="panel_title" class="panel-heading">游戏<span id="span_game_status">未开始</span> <span id="span_word" class="label label-danger"></span><label class="checkbox-inline pull-right">
                   <input type="checkbox" id="checkbox_autoscroll" checked> 自动滚屏
                 </label></div>
             <div class="list-group">
               <div class="list-group-item">
-                <div id="messages" style="overflow-y: auto"></div>
+                <div id="messages" ></div>
               </div>
               <div class="list-group-item">
               <div class="input-group">
-                <div class="input-group-btn" style="width: 80%">
+                <div id="div_chat" class="input-group-btn">
                   <input type="text" id="chat" class="form-control">
                 </div>
                 <div class="input-group-btn">
-                  <input id="input_color" style="width: 53px; padding: 0 2px;" class="form-control" type="color">
+                  <input id="input_color" class="form-control" type="color">
                 </div>
                 <div class="input-group-btn">
                   <button id="button_chat" class="btn btn-default form-control">输入</button>
@@ -69,7 +90,7 @@
               </div>
               <div class="list-group-item form-inline">
                 <div class="btn-group">
-                  <button class="btn btn-default" style="display: none"> </button>
+                  <button class="btn btn-default hide"> </button>
                   <button id="button_ready_play" class="btn btn-default">准备</button>
                   <button id="button_ready_white" class="btn btn-default">小白</button>
                   <button id="button_ready_owner" class="btn btn-default">给词</button>
@@ -82,7 +103,7 @@
                   </div>
                   <button id="button_vote" class="btn btn-default">投票</button>
                   <button id="button_white" class="btn btn-default">猜词</button>
-                  <button class="btn btn-default" style="display: none"> </button>
+                  <button class="btn btn-default hide"> </button>
                 </div>
               </div>
             </div>

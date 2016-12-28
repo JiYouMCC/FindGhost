@@ -1,3 +1,4 @@
+$('[data-toggle="tooltip"]').tooltip();
 // init wilddog
 findghost.init("zhuagui");
 
