@@ -60,6 +60,15 @@ var findghost = {
                 }
             },
             set: function(displayName, callback) {
+                if (displayName.length <= 0) {
+                    findghost.handleError("昵称不能为空");
+                    return;
+                }
+
+                if (displayName.length > 10) {
+                    findghost.handleError("昵称太长了");
+                    return;
+                }
                 var user = findghost.user.get();
                 if (user) {
                     var oldDisplay = findghost.user.displayName.get();
