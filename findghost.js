@@ -243,7 +243,7 @@ var findghost = {
                     findghost.game.words.expose(message, function(expose) {
                         if (expose) {
                             findghost.handleError("爆词了！不能发送！");
-                        }else {
+                        } else {
                             findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
                         }
                     });
@@ -592,7 +592,6 @@ var findghost = {
                                         });
                                         return
                                     case findghost.game.camp.CAMP.GHOST:
-                                    default:
                                         callback(undefined);
                                         return
                                 }
@@ -695,11 +694,9 @@ var findghost = {
                                                                 callback(true);
                                                             });
                                                         });*/
-                                                        break;
+                                                        return;
                                                     }
-                                                    callback(false);
                                                 }
-                                            } else {
                                                 callback(false);
                                             }
                                         });
