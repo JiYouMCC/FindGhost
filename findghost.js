@@ -240,8 +240,13 @@ var findghost = {
             sendChat: function(message, color, callback) {
                 var user = findghost.user.get();
                 if (user) {
-                    findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
-                    findghost.game.words.expose(message, function() {});
+                    findghost.game.words.expose(message, function(expose) {
+                        if (expose) {
+                            findghost.handleError("爆词了！不能发送！");
+                        }else {
+                            findghost.hall.message.send(user.uid, findghost.user.displayName.get(), message, findghost.hall.message.TYPE.CHAT, color, callback);
+                        }
+                    });
                 }
             },
             sendPlayer: function(message, callback) {
@@ -576,17 +581,17 @@ var findghost = {
                         case findghost.GAME_ROLE.PLAYER:
                             findghost.game.camp.get(function(camp) {
                                 switch (camp) {
-                                    case findghost.camp.CAMP.GHOST:
+                                    case findghost.game.camp.CAMP.GHOST:
                                         wilddog.sync().ref("/game/words/ghostWord").once('value', function(snapshot) {
                                             callback(snapshot.val());
                                         });
                                         return
-                                    case findghost.camp.CAMP.MAN:
+                                    case findghost.game.camp.CAMP.MAN:
                                         wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
                                             callback(snapshot.val());
                                         });
                                         return
-                                    case findghost.camp.CAMP.GHOST:
+                                    case findghost.game.camp.CAMP.GHOST:
                                     default:
                                         callback(undefined);
                                         return
@@ -682,13 +687,14 @@ var findghost = {
                                             if (word) {
                                                 for (c in word) {
                                                     if (message.indexOf(word[c]) >= 0) {
-                                                        var displayName = findghost.user.displayName.get();
+                                                        callback(true);
+                                                        /*var displayName = findghost.user.displayName.get();
                                                         var uid = findghost.user.uid.get();
                                                         findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.EXPOSE, [displayName], function() {
                                                             findghost.game.camp.alive.kill(uid, function() {
                                                                 callback(true);
                                                             });
-                                                        });
+                                                        });*/
                                                         break;
                                                     }
                                                     callback(false);
@@ -761,9 +767,9 @@ var findghost = {
                                         var camp = undefined;
                                         wilddog.sync().ref("/game/users/" + uid).child("alive").set(true);
                                         if (ghostList.indexOf(index) < 0) {
-                                            camp = findghost.camp.CAMP.MAN;
+                                            camp = findghost.game.camp.CAMP.MAN;
                                         } else {
-                                            camp = findghost.camp.CAMP.GHOST;
+                                            camp = findghost.game.camp.CAMP.GHOST;
                                         }
 
                                         wilddog.sync().ref("/game/camp/").child(uid).set({
@@ -875,7 +881,7 @@ var findghost = {
             },
             man: {
                 get: function(callback) {
-                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.camp.CAMP.MAN).once('value', function(snapshot) {
+                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.game.camp.CAMP.MAN).once('value', function(snapshot) {
                         callback(snapshot.val());
                     });
                 },
@@ -891,7 +897,7 @@ var findghost = {
             },
             ghost: {
                 get: function(callback) {
-                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.camp.CAMP.GHOST).once('value', function(snapshot) {
+                    wilddog.sync().ref("/game/camp/").orderByChild("camp").equalTo(findghost.game.camp.CAMP.GHOST).once('value', function(snapshot) {
                         callback(snapshot.val());
                     });
                 },
@@ -924,9 +930,9 @@ var findghost = {
                             }
 
                             if (aliveGhostCount == 0) {
-                                callback(true, findghost.camp.CAMP.MAN);
+                                callback(true, findghost.game.camp.CAMP.MAN);
                             } else if (aliveGhostCount >= aliveManCount) {
-                                callback(true, findghost.camp.CAMP.GHOST);
+                                callback(true, findghost.game.camp.CAMP.GHOST);
                             } else {
                                 callback(false, null);
                             }
