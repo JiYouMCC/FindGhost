@@ -3,7 +3,7 @@ var findghost = {
     showMessageCount: 128,
     GAME_ROLE: {
         PLAYER: "玩家",
-        WHITE: "小白",
+        WHITE: "小白兔",
         OWNER: "法官"
     },
     GAME_STATUS: {
