@@ -927,9 +927,9 @@ var findghost = {
                             }
 
                             if (aliveGhostCount == 0) {
-                                callback(true, findghost.game.camp.CAMP.MAN);
+                                callback(true, "人");
                             } else if (aliveGhostCount >= aliveManCount) {
-                                callback(true, findghost.game.camp.CAMP.GHOST);
+                                callback(true, "鬼");
                             } else {
                                 callback(false, null);
                             }
