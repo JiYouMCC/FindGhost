@@ -872,7 +872,7 @@ var findghost = {
                             if (result) {
                                 findghost.game.end(winer);
                             } else {
-                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.CONTINUE);
+                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.CONTINUE, []);
                             }
                             callback();
                         })
