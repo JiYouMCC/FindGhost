@@ -257,11 +257,7 @@ var findghost = {
             },
             parseMessage: function(messages, messageCode, params) {
                 if (messageCode >= 0 && messageCode < messages.length) {
-                    try {
-                        return findghost.formatString.apply(messages[messageCode], params);
-                    } catch (err) {
-                         return findghost.formatString.apply(messages[messageCode], [params]);
-                    }
+                    return findghost.formatString.apply(messages[messageCode], params);
                 }
             },
             addCallback: function(callback) {
