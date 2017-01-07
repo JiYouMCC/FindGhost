@@ -257,7 +257,11 @@ var findghost = {
             },
             parseMessage: function(messages, messageCode, params) {
                 if (messageCode >= 0 && messageCode < messages.length) {
-                    return findghost.formatString.apply(messages[messageCode], params);
+                    try {
+                        return findghost.formatString.apply(messages[messageCode], params);
+                    } catch (err) {
+                         return findghost.formatString.apply(messages[messageCode], [params]);
+                    }
                 }
             },
             addCallback: function(callback) {
@@ -1128,7 +1132,7 @@ var findghost = {
                                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_RUN, [displayName]);
                                             })
                                         } else {
-                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_LEAVE, displayName);
+                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_LEAVE, [displayName]);
                                         }
                                     })
                                     break;
