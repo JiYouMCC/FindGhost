@@ -1131,7 +1131,7 @@ var findghost = {
                                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_RUN, [displayName]);
                                             })
                                         } else {
-                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_LEAVE, displayName);
+                                            findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.PLAYER_LEAVE, [displayName]);
                                         }
                                     })
                                     break;
