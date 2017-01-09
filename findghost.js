@@ -238,6 +238,10 @@ var findghost = {
                 findghost.hall.message.send("", params, messageCode, findghost.hall.message.TYPE.GAME, "", callback);
             },
             sendChat: function(message, color, callback) {
+                if (!message) {
+                    return;
+                }
+
                 var user = findghost.user.get();
                 if (user) {
                     findghost.game.words.expose(message, function(expose) {
