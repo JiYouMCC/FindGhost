@@ -1,5 +1,5 @@
 var findghost = {
-    userSleepTime: 2 * 60 * 1000,
+    userSleepTime: 5 * 60 * 1000,
     showMessageCount: 128,
     GAME_ROLE: {
         PLAYER: "玩家",
