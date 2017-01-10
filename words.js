@@ -3,7 +3,7 @@ findghost.game.words = {
     length: function(callback) {
         findghost.game.role.get(undefined, function(gameRole) {
             if (gameRole && gameRole == findghost.GAME_ROLE.WHITE) {
-                wilddog.sync().ref("/game/words/ghostWord").once('value', function(snapshot) {
+                findghost.db.sync.ref("/game/words/ghostWord").once('value', function(snapshot) {
                     if (snapshot && snapshot.val()) {
                         callback(snapshot.val().length);
                     } else {
@@ -29,13 +29,13 @@ findghost.game.words = {
                         findghost.game.camp.get(function(camp) {
                             switch (camp) {
                                 case findghost.game.camp.CAMP.GHOST:
-                                    wilddog.sync().ref("/game/words/ghostWord").once('value', function(snapshot) {
+                                    findghost.db.sync.ref("/game/words/ghostWord").once('value', function(snapshot) {
                                         findghost.game.words._word = snapshot.val();
                                         callback(findghost.game.words._word);
                                     });
                                     return
                                 case findghost.game.camp.CAMP.MAN:
-                                    wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
+                                    findghost.db.sync.ref("/game/words/manWord").once('value', function(snapshot) {
                                         findghost.game.words._word = snapshot.val();
                                         callback(findghost.game.words._word);
                                     });
@@ -48,7 +48,7 @@ findghost.game.words = {
                         });
                         break;
                     case findghost.GAME_ROLE.OWNER:
-                        wilddog.sync().ref("/game/words/").once('value', function(snapshot) {
+                        findghost.db.sync.ref("/game/words/").once('value', function(snapshot) {
                             findghost.game.words._word = snapshot.val();
                             callback(findghost.game.words._word);
                         });
@@ -64,7 +64,7 @@ findghost.game.words = {
                     manWord: manWord,
                     ghostWord: ghostWord
                 };
-                wilddog.sync().ref("/game/").child("words").set(wordInfo).then(function() {
+                findghost.db.sync.ref("/game/").child("words").set(wordInfo).then(function() {
                     findghost.game.words._word = wordInfo;
                     callback();
                 });
@@ -72,12 +72,12 @@ findghost.game.words = {
         });
     },
     remove: function(callback) {
-        wilddog.sync().ref("/game/words").remove();
+        findghost.db.sync.ref("/game/words").remove();
         findghost.game.words._word = undefined;
         callback();
     },
     getAll: function(callback) {
-        wilddog.sync().ref("/game/words/").once('value', function(snapshot) {
+        findghost.db.sync.ref("/game/words/").once('value', function(snapshot) {
             callback(snapshot.val());
         });
     },
@@ -104,7 +104,7 @@ findghost.game.words = {
                                 var displayName = findghost.user.displayName.get();
                                 var uid = findghost.user.uid.get();
                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.GUESS_WORD, [displayName, word], function() {
-                                    wilddog.sync().ref("/game/words/manWord").once('value', function(snapshot) {
+                                    findghost.db.sync.ref("/game/words/manWord").once('value', function(snapshot) {
                                         if (snapshot && snapshot.val()) {
                                             if (snapshot.val() == word) {
                                                 findghost.game.end(findghost.GAME_ROLE.WHITE);
