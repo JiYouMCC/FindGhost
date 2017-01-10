@@ -508,7 +508,9 @@ var findghost = {
                 },
                 remove: function(callback) {
                     wilddog.sync().ref("/game/owner").remove();
-                    callback();
+                    if (callback) {
+                        callback();
+                    }
                 },
             },
             updateCallback: function(callback) {
@@ -563,7 +565,9 @@ var findghost = {
             },
             removeAll: function(callback) {
                 wilddog.sync().ref("/game/users").remove();
-                callback();
+                if (callback) {
+                    callback();
+                }
             }
         },
         camp: {
@@ -583,7 +587,7 @@ var findghost = {
             },
             remove: function(callback) {
                 wilddog.sync().ref("/game/camp").remove();
-                callback();
+                \;
             },
             create: function(callback) {
                 findghost.game.role.get(undefined, function(role) {
@@ -722,7 +726,9 @@ var findghost = {
                             } else {
                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.CONTINUE, []);
                             }
-                            callback();
+                            if (callback) {
+                                callback();
+                            }
                         })
                     })
                 }
@@ -829,7 +835,9 @@ var findghost = {
                                 displayName: tDisplayName
                             }).then(function() {
                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE, [displayName, tDisplayName]);
-                                callback();
+                                if (callback) {
+                                    callback();
+                                }
                             });
                         } else {
                             callback(undefined);
