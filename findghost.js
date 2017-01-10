@@ -222,7 +222,9 @@ var findghost = {
             ],
             send: function(uid, displayName, message, type, color, callback) {
                 var messageRef = wilddog.sync().ref("/hall/message");
-                callback();
+                if (callback) {
+                    callback();
+                }
                 messageRef.push({
                     "uid": uid,
                     "uname": displayName,
