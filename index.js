@@ -1,12 +1,17 @@
 $('[data-toggle="tooltip"]').tooltip();
 // init wilddog
-findghost.db.init( {
-            apiKey: "AIzaSyD4X5tblmJliy5f0WD4xIPNgV6v3RVEQ6s",
-            authDomain: "findghost-11aab.firebaseapp.com",
-            databaseURL: "https://findghost-11aab.firebaseio.com",
-            storageBucket: "findghost-11aab.appspot.com",
-            messagingSenderId: "292064845703"
-        });
+/*findghost.db.init({
+    apiKey: "AIzaSyD4X5tblmJliy5f0WD4xIPNgV6v3RVEQ6s",
+    authDomain: "findghost-11aab.firebaseapp.com",
+    databaseURL: "https://findghost-11aab.firebaseio.com",
+    storageBucket: "findghost-11aab.appspot.com",
+    messagingSenderId: "292064845703"
+});*/
+
+findghost.db.init("wilddog", {
+    authDomain: "findghost.wilddog.com",
+    syncURL: "https://findghost.wilddogio.com"
+});
 
 // override error handler
 findghost.handleError = function(error) {
