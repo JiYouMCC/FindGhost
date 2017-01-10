@@ -587,7 +587,9 @@ var findghost = {
             },
             remove: function(callback) {
                 wilddog.sync().ref("/game/camp").remove();
-                \;
+                if (callback) {
+                    callback();
+                }
             },
             create: function(callback) {
                 findghost.game.role.get(undefined, function(role) {
