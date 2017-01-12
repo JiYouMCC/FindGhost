@@ -202,10 +202,11 @@ var mersenneTwisterObject = null;
 
 var MTRandom = function() {
   if(mersenneTwisterObject == null)
+  {  
     mersenneTwisterObject = new MersenneTwister();
-
-  if(mersenneTwisterObject == null)
-    throw "mersenneTwisterObject init fail";
+    if(mersenneTwisterObject == null)
+      throw "mersenneTwisterObject init fail";
+  }
 
   return mersenneTwisterObject.random();
 }
