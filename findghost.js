@@ -603,9 +603,7 @@ var findghost = {
                                     var manCount = playerCount - ghostCount;
                                     var ghostList = [];
                                     while (ghostList.length < ghostCount) {
-                                        var x = Math.sin(seed++) * 10000;
-                                        x = x - Math.floor(x);
-                                        var newGhostId = Math.floor(x * playerCount + 1);
+                                        var newGhostId = Math.floor(MTRandom() * playerCount + 1);
                                         if (ghostList && ghostList.indexOf(newGhostId) < 0) {
                                             ghostList.push(newGhostId);
                                         }
