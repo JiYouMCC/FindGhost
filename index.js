@@ -453,6 +453,7 @@ $("#button_start").click(function() {
 });
 
 $("#button_start_confirm").click(function() {
+	findghost.gameHistory.start_backup();
     findghost.game.camp.create(function() {
         findghost.game.start(function() {});
     });
