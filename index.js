@@ -1,6 +1,17 @@
 $('[data-toggle="tooltip"]').tooltip();
 // init wilddog
-findghost.init("zhuagui");
+/*findghost.db.init({
+    apiKey: "AIzaSyD4X5tblmJliy5f0WD4xIPNgV6v3RVEQ6s",
+    authDomain: "findghost-11aab.firebaseapp.com",
+    databaseURL: "https://findghost-11aab.firebaseio.com",
+    storageBucket: "findghost-11aab.appspot.com",
+    messagingSenderId: "292064845703"
+});*/
+
+findghost.db.init("wilddog", {
+    authDomain: "findghost.wilddog.com",
+    syncURL: "https://findghost.wilddogio.com"
+});
 
 // override error handler
 findghost.handleError = function(error) {
@@ -157,10 +168,14 @@ function updateVoteSelect() {
 // game status listener
 findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
+    if (gameStatus == findghost.GAME_STATUS.NOT_START) {
+        findghost.game.words.clean();
+    }
     var user = findghost.user.get();
     findghost.game.role.get(undefined, function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
+
 });
 
 
@@ -438,6 +453,7 @@ $("#button_start").click(function() {
 });
 
 $("#button_start_confirm").click(function() {
+	findghost.gameHistory.start_backup();
     findghost.game.camp.create(function() {
         findghost.game.start(function() {});
     });

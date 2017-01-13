@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>游戏记录</title>
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+    <style type="text/css">
+      #history_messages {
+        overflow-y: auto
+      }
+
+      #input_color {
+        width: 53px; 
+        padding: 0 2px;
+      }
+
+      #div_chat {
+        width: 80%;
+      }
+    </style>
+  </head>
+  <body>
+    <nav id="nav" class="navbar navbar-default" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">游戏记录</a>
+        </div>
+	</nav>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9">
+          <div id="left_pannel" class="panel panel-default">
+          <div id="panel_title" class="panel-heading">游戏<span id="span_game_status">记录</span> <span id="span_word" class="label label-danger"></span>
+          </div>
+            <div class="list-group">
+              <div class="list-group-item">
+                <div id="history_messages" ></div>
+              </div>
+              <div class="list-group-item">
+	           	<div id="tab-memo" class="list-group-item form-inline">请点击下面游戏记录号</div>
+              	<div id="list-container" class="input-group"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- error modal -->
+    <div id="modal_error" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="modal_error" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+            </button>
+            <h4 class="modal-title">哎呀出错了！</h4>
+          </div>
+          <div id="div_error" class="modal-body">
+            哎呀出错了！
+          </div>
+          <div class="modal-footer">
+            <button id="button_error_ok" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>  
+  <script src="findghost.js"></script>
+  <script src="db.js"></script>
+  <script src="game_history.js"></script>
+</html>
