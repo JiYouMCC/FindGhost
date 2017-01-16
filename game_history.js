@@ -14,7 +14,7 @@ findghost.handleError = function(error) {
 // chat windows height setting
 $(window).resize(function() {
     $("#left_pannel").height(window.innerHeight - 94);
-    $("#messages").height(window.innerHeight - 265);
+    $("#messages").height(window.innerHeight - 94 - 62);
 });
 
 $(window).load(function() {
@@ -30,28 +30,26 @@ findghost.history.list(function(historirs) {
         var date = new Date(parseInt(h));
         var men = history["men"];
         var ghosts = history["ghosts"];
-        var winner = history["winner"];
+        var winer = history["winer"];
         var ownerInfo = history["owner"];
         var content = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + findghost.formatDate(date);
         $("#history_list").append(
-            $("<a></a>").attr("history_id", h).attr("href", "#")
-            .addClass('list-group-item')
-            .text(content).append(
-                $("<span></span>").addClass("label label-info").text(manWord)
-            )
-            .append(
-                $("<span></span>").addClass("label label-danger").text(ghostWord)
-            )
+            $("<tr></tr>").attr("history_id", h).attr("href", "#")
+            .append($("<td></td>").addClass("text-center").text(content))
+            .append($("<td></td>").addClass("text-center").text(manWord))
+            .append($("<td></td>").addClass("text-center").text(ghostWord))
+            .append($("<td></td>").addClass("text-center").text(ownerInfo.displayName))
+            .append($("<td></td>").addClass("text-center").text(winer))
         );
     }
-
 });
 
-$("#history_list").on("click", "a", function(event) {
+$("#history_list").on("click", "tr", function(event) {
     var h = $(this).attr("history_id");
-    $('[history_id]').removeClass("active");
+    $('[history_id]').removeClass("info");
+    $("#messages").text("");
+    $('[history_id="' + h + '"]').addClass("info");
     findghost.history.read(h, function(messages) {
-        $("#messages").text("");
         for (mid in messages) {
             var messageInfo = messages[mid];
             var date = messageInfo.date;
@@ -87,6 +85,5 @@ $("#history_list").on("click", "a", function(event) {
                 $("#messages").scrollTop($("#messages").prop("scrollHeight"));
             }
         }
-        $('[history_id="' + h + '"]').addClass("active");
     });
 });
