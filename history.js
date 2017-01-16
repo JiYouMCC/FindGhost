@@ -1,6 +1,4 @@
 findghost.history = {
-    jsNodes: {},
-    gameList: {},
     addMessage: function(messages) {
         var count = 0;
         var last = undefined;
@@ -8,7 +6,7 @@ findghost.history = {
             count += 1;
             last = mid;
             var messageInfo = messages[mid];
-            findghost.history.jsonNodes[mid] = messageInfo;
+            findghost.history._jsonNodes[mid] = messageInfo;
         }
 
         return [count, last];
@@ -17,7 +15,7 @@ findghost.history = {
         var gameName = new Date().getTime();
         var count = undefined;
         var last = undefined;
-        findghost.history.jsonNodes = {};
+        findghost.history._jsonNodes = {};
         findghost.db.sync.ref("/hall/message").limitToFirst(500).once("value", function(snapshot) {
             var result = findghost.history.addMessage(snapshot.val());
             count = result[0];
@@ -25,7 +23,7 @@ findghost.history = {
             if (count == 500) {
                 findghost.history.go_backup(count, last, gameName, callback);
             } else {
-                findghost.db.sync.ref("/history").child(gameName).set(findghost.history.jsonNodes, function(error) {
+                findghost.db.sync.ref("/history").child(gameName).set(findghost.history._jsonNodes, function(error) {
                     if (error == null) {
                         // 建立记录索引
                         findghost.db.sync.ref("last").once("value", function(snapshot) {
@@ -58,7 +56,7 @@ findghost.history = {
             if (count == 500) {
                 findghost.history.go_backup(count, last, gameName, callback);
             } else {
-                findghost.db.sync.ref("/history").child(gameName).set(findghost.history.jsonNodes, function(error) {
+                findghost.db.sync.ref("/history").child(gameName).set(findghost.history._jsonNodes, function(error) {
                     if (error == null) {
                         findghost.db.sync.ref("/hall/message").remove();
                         console.log("清理完毕");
