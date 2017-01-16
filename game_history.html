@@ -32,9 +32,38 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">游戏记录</a>
+          <a class="navbar-brand" href="#">抓鬼</a>
         </div>
-	</nav>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li>
+              <a id="menu_rule" href="#" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
+            </li>
+            <li class="active">
+              <a id="menu_gameHistory" href="game_history.html" title="游戏记录"  target="_blank">游戏记录</a>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">开发相关<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a data-toggle="tooltip" data-placement="bottom" title="Github repository" href="https://github.com/JiYouMCC/FindGhost/" target="_blank">源代码</a></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" title="Github commits" href="https://github.com/JiYouMCC/FindGhost/commits/master" target="_blank">更新记录</a></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" title="有任何建议或者报错请在Issues版面报Issue" href="https://github.com/JiYouMCC/FindGhost/issues" target="_blank">建议和反馈</a></li>
+                <li class="divider"></li>
+                <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/JiYouMCC" target="_blank">联系作者</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul id="menu_online" class="nav navbar-nav navbar-right">
+            <li><a id="menu_register" href="#">注册</a></li>
+            <li><a id="menu_login" href="#">登录</a></li>
+          </ul>
+          <ul id="button_logout" class="nav navbar-nav navbar-right">
+            <li><a id="menu_update_display_name" href="#"> </a></li>
+            <li><a id="menu_logout" href="#">退出</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
     <div class="container">
       <div class="row">
         <div class="col-md-9">
@@ -43,13 +72,16 @@
           </div>
             <div class="list-group">
               <div class="list-group-item">
-                <div id="history_messages" ></div>
-              </div>
-              <div class="list-group-item">
-	           	<div id="tab-memo" class="list-group-item form-inline">请点击下面游戏记录号</div>
-              	<div id="list-container" class="input-group"></div>
+                <div id="messages" ></div>
               </div>
             </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel panel-default">
+            <div class="panel-heading">记录列表 </div>
+            <ul id="history_list" class="list-group">
+            </ul>
           </div>
         </div>
       </div>
@@ -74,14 +106,12 @@
         </div>
       </div>
     </div>
-        </div>
-      </div>
-    </div>
   </body>
   <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
   <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
   <script src="https://cdn.wilddog.com/sdk/js/2.3.8/wilddog.js"></script>  
   <script src="findghost.js"></script>
   <script src="db.js"></script>
+  <script src="history.js"></script>
   <script src="game_history.js"></script>
 </html>
