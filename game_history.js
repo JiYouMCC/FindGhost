@@ -37,7 +37,7 @@ findghost.history.list(function(historirs) {
             $("<a></a>").attr("history_id", h).attr("href", "#")
             .addClass('list-group-item')
             .text(content).append(
-                $("<span></span>").addClass("label label-primary").text(manWord)
+                $("<span></span>").addClass("label label-info").text(manWord)
             )
             .append(
                 $("<span></span>").addClass("label label-danger").text(ghostWord)
@@ -49,6 +49,7 @@ findghost.history.list(function(historirs) {
 
 $("#history_list").on("click", "a", function(event) {
     var h = $(this).attr("history_id");
+    $('[history_id]').removeClass("active");
     findghost.history.read(h, function(messages) {
         $("#messages").text("");
         for (mid in messages) {
@@ -86,5 +87,6 @@ $("#history_list").on("click", "a", function(event) {
                 $("#messages").scrollTop($("#messages").prop("scrollHeight"));
             }
         }
+        $('[history_id="' + h + '"]').addClass("active");
     });
 });
