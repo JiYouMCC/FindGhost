@@ -25,6 +25,9 @@
         cursor: pointer;
         background-color: #f5f5f5;
       }
+      #history_list {
+        overflow-y: auto
+  	  }
     </style>
   </head>
   <body>
@@ -75,16 +78,16 @@
           <div class="panel panel-default">
             <div class="panel-heading">记录列表 </div>
             <table class="table table-condensed">
-            <thead>
+            <thead style="display:block;">
               <tr>
-                <th class="text-center">时间</th>
-                <th class="text-center">人词</th>
-                <th class="text-center">鬼词</th>
-                <th class="text-center">法官</th>
-                <th class="text-center">赢家</th>
+                <th class="text-center" style="width:150px;">时间</th>
+                <th class="text-center" style="width:150px;">人词</th>
+                <th class="text-center" style="width:150px;">鬼词</th>
+                <th class="text-center" style="width:150px;">法官</th>
+                <th class="text-center" style="width:150px;">赢家</th>
               </tr>
             </thead>
-            <tbody id="history_list">
+            <tbody id="history_list" style="overflow:auto;display:block;">
             </tbody>
             </table>
           </div>
