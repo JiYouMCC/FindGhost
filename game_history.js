@@ -14,6 +14,7 @@ findghost.handleError = function(error) {
 // chat windows height setting
 $(window).resize(function() {
     $("#left_pannel").height(window.innerHeight - 94);
+    $("#history_list").height(window.innerHeight - 168);
     $("#messages").height(window.innerHeight - 94 - 62);
 });
 
