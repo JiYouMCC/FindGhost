@@ -8,24 +8,12 @@
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
     <style type="text/css">
-      #messages {
-        overflow-y: auto
-      }
-
-      #input_color {
-        width: 53px; 
-        padding: 0 2px;
-      }
-
-      #div_chat {
-        width: 80%;
-      }
-
       #history_list > tr:hover {
         cursor: pointer;
         background-color: #f5f5f5;
       }
-      #history_list {
+      #history_list,
+      #history_pannel {
         overflow-y: auto
   	  }
     </style>
@@ -44,9 +32,6 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li>
-              <a id="menu_rule" href="#" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
-            </li>
             <li class="active">
               <a id="menu_gameHistory" href="game_history.html" title="游戏记录"  target="_blank">游戏记录</a>
             </li>
@@ -77,19 +62,21 @@
       <div class="col-md-5">
           <div class="panel panel-default">
             <div class="panel-heading">记录列表 </div>
-            <table class="table table-condensed">
-            <thead style="display:block;">
-              <tr>
-                <th class="text-center" style="width:150px;">时间</th>
-                <th class="text-center" style="width:150px;">人词</th>
-                <th class="text-center" style="width:150px;">鬼词</th>
-                <th class="text-center" style="width:150px;">法官</th>
-                <th class="text-center" style="width:150px;">赢家</th>
-              </tr>
-            </thead>
-            <tbody id="history_list" style="overflow:auto;display:block;">
-            </tbody>
-            </table>
+            <div id="history_pannel" class="table-responsive">
+              <table class="table table-condensed">
+              <thead style="display:block;">
+                <tr>
+                  <th class="text-center">时间</th>
+                  <th class="text-center">人词</th>
+                  <th class="text-center">鬼词</th>
+                  <th class="text-center">法官</th>
+                  <th class="text-center">赢家</th>
+                </tr>
+              </thead>
+              <tbody id="history_list">
+              </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div class="col-md-7">
