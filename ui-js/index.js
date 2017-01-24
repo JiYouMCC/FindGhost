@@ -19,6 +19,12 @@ findghost.handleError = function(error) {
     $("#modal_error").modal('show');
 }
 
+
+var inputColor = Cookies.get('input_color');
+if (inputColor) {
+    $("#input_color").val(inputColor);
+}
+
 // clean sleeping user per 10 secs
 setInterval(function() {
     findghost.hall.user.clear();
@@ -490,3 +496,7 @@ $("#button_white_commit").click(function() {
         });
     })
 });
+
+$("#input_color").change(function(){
+    Cookies.set("input_color", $(this).val());
+})
