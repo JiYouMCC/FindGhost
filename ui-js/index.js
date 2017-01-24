@@ -168,14 +168,11 @@ function updateVoteSelect() {
 // game status listener
 findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
-    if (gameStatus == findghost.GAME_STATUS.NOT_START) {
-        findghost.game.words.clean();
-    }
+    findghost.game.words.clean();
     var user = findghost.user.get();
     findghost.game.role.get(undefined, function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
-
 });
 
 
