@@ -25,10 +25,11 @@ if (inputColor) {
     $("#input_color").val(inputColor);
 }
 
+// 临时注释清理
 // clean sleeping user per 10 secs
-setInterval(function() {
-    findghost.hall.user.clear();
-}, 10000);
+//setInterval(function() {
+//    findghost.hall.user.clear();
+//}, 10000);
 
 // heartbreak
 setInterval(function() {
@@ -60,9 +61,16 @@ findghost.hall.user.updateCallback(function(snapshot) {
     $("#user_list").text("");
     var users = snapshot.val();
     var count = 0;
+    var currentDate = findghost.getCurrentDate();
     for (uid in users) {
         var displayName = users[uid].displayName;
-        $("#user_list").append($("<li></li>").addClass("list-group-item").text(displayName));
+        var date = users[uid].date;
+        var li = $("<li></li>").addClass("list-group-item").text(displayName);
+        if (date + findghost.userSleepTime < currentDate) {
+            li.addClass('list-group-item-warning');
+        }
+
+        $("#user_list").append(li);
         count += 1;
     }
     $("#online_count").text(count);
