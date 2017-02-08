@@ -32,7 +32,7 @@ setInterval(function() {
         if (status && status != findghost.GAME_STATUS.ONGOING) {
             findghost.hall.user.clear();
         }
-    }
+    });
 }, 10000);
 
 // heartbreak
