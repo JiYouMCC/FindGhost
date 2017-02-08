@@ -25,11 +25,15 @@ if (inputColor) {
     $("#input_color").val(inputColor);
 }
 
-// 临时注释清理
+// 游戏准备、未开始状态才执行清理
 // clean sleeping user per 10 secs
-//setInterval(function() {
-//    findghost.hall.user.clear();
-//}, 10000);
+setInterval(function() {
+    findghost.game.status.get(function(status) {
+        if (status && status != findghost.GAME_STATUS.ONGOING) {
+            findghost.hall.user.clear();
+        }
+    }
+}, 10000);
 
 // heartbreak
 setInterval(function() {
