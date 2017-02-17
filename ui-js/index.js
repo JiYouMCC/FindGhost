@@ -9,8 +9,8 @@ $('[data-toggle="tooltip"]').tooltip();
 });*/
 
 findghost.db.init("wilddog", {
-    authDomain: "findghost.wilddog.com",
-    syncURL: "https://findghost.wilddogio.com"
+    authDomain: "zhuagui01.wilddog.com",
+    syncURL: "https://zhuagui01.wilddogio.com"
 });
 
 // override error handler
