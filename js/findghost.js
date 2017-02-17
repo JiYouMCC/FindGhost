@@ -186,7 +186,8 @@ var findghost = {
                 PLAYER_RUN: 20,
                 PLAYER_LEAVE: 21,
                 WHITE_RUN: 22,
-                WHITE_LEAVE: 23
+                WHITE_LEAVE: 23,
+                VOTE_EARLY_KILL: 24
             },
             GAME_MESSAGE_TXT: [
                 "游戏开始了，请大家确认自己发到的词！现在场上出现了{0}个鬼，它们和{1}个人混在一起，但是谁都不知道自己是人还是鬼，大家加油把它们抓出来吧！",
@@ -212,7 +213,8 @@ var findghost = {
                 "玩家“{0}”逃跑了，Ta在逃跑的路上被活活呸死~~",
                 "玩家“{0}”拖着自己的尸体走了……",
                 "小白“{0}”放弃了……",
-                "小白“{0}”拖着自己的尸体走了……"
+                "小白“{0}”拖着自己的尸体走了……",
+                "“{0}”已经被超过半数的人指认为鬼了，本着人/鬼道主义减轻Ta的痛苦，提前让Ta上路了……",
             ],
             send: function(uid, displayName, message, type, color, callback) {
                 var messageRef = findghost.db.sync.ref("/hall/message");
@@ -419,21 +421,30 @@ var findghost = {
                         }
                     });
                 },
-                getAlive: function(callback) {
-                    findghost.db.sync.ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.PLAYER).once('value', function(snapshot) {
-                        var result = snapshot.val();
-                        if (result) {
-                            var finalResult = {};
-                            for (uid in result) {
-                                if (result[uid].alive) {
-                                    finalResult[uid] = result[uid];
+                alive: {
+                    get: function(callback) {
+                        findghost.db.sync.ref("game/users").orderByChild("role").equalTo(findghost.GAME_ROLE.PLAYER).once('value', function(snapshot) {
+                            var result = snapshot.val();
+                            if (result) {
+                                var finalResult = {};
+                                for (uid in result) {
+                                    if (result[uid].alive) {
+                                        finalResult[uid] = result[uid];
+                                    }
                                 }
+                                callback(finalResult);
                             }
-
-                            callback(finalResult);
-                        }
-
-                    });
+                        });
+                    },
+                    count: function(callback) {
+                        findghost.game.role.player.alive.get(function(alivePlayers) {
+                            var count = 0;
+                            for (uid in alivePlayers) {
+                                count += 1;
+                            }
+                            callback(count);
+                        });
+                    }
                 }
             },
             white: {
@@ -804,156 +815,6 @@ var findghost = {
                             }
                         });
                     });
-                }
-            }
-        },
-        vote: {
-            callback: undefined,
-            STATUS: {
-                NOT_START: 0,
-                IN_PROGRESS: 1,
-                DONE: 2
-            },
-            target: {
-                get: function(callback) {
-                    var user = findghost.user.get();
-                    if (user) {
-                        findghost.game.role.player.getAlive(function(alivePlayers) {
-                            if (alivePlayers.hasOwnProperty(user.uid)) {
-                                // delete alivePlayers[user.uid];
-                                callback(alivePlayers);
-                            } else {
-                                callback(undefined);
-                            }
-                        });
-                    } else {
-                        callback(undefined);
-                    }
-                }
-            },
-            get: function(callback) {
-                findghost.db.sync.ref("/game/vote").once('value', function(snapshot) {
-                    callback(snapshot.val());
-                });
-            },
-            set: function(tid, tDisplayName, callback) {
-                var uid = findghost.user.uid.get();
-                if (uid) {
-                    var displayName = findghost.user.displayName.get();
-                    findghost.game.role.player.getAlive(function(alivePlayers) {
-                        if (alivePlayers && alivePlayers.hasOwnProperty(uid) && alivePlayers.hasOwnProperty(tid)) {
-                            findghost.db.sync.ref("/game/vote").child(uid).set({
-                                uid: tid,
-                                displayName: tDisplayName
-                            }).then(function() {
-                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE, [displayName, tDisplayName]);
-                                if (callback) {
-                                    callback();
-                                }
-                            });
-                        } else {
-                            callback(undefined);
-                        }
-                    });
-                } else {
-                    callback(undefined);
-                }
-            },
-            remove: function(callback) {
-                findghost.db.sync.ref("/game/vote").remove()
-                if (callback) {
-                    callback();
-                }
-            },
-            status: {
-                get: function(callback) {
-                    findghost.game.vote.get(function(votes) {
-                        var voteCount = 0;
-                        for (uid in votes) {
-                            voteCount += 1;
-                        }
-
-                        if (voteCount == 0) {
-                            callback(findghost.game.vote.STATUS.NOT_START);
-                        } else {
-                            findghost.game.role.player.getAlive(function(alivePlayers) {
-                                var alivePlayersCount = 0;
-                                for (uid in alivePlayers) {
-                                    alivePlayersCount += 1;
-                                }
-
-                                if (voteCount == alivePlayersCount) {
-                                    callback(findghost.game.vote.STATUS.DONE);
-                                } else {
-                                    callback(findghost.game.vote.STATUS.IN_PROGRESS);
-                                }
-                            });
-                        }
-                    })
-                }
-            },
-            result: function(callback) {
-                findghost.game.vote.status.get(function(status) {
-                    if (status == findghost.game.vote.STATUS.DONE) {
-                        var result = {};
-                        findghost.game.vote.get(function(votes) {
-                            for (uid in votes) {
-                                var tid = votes[uid].uid;
-                                var displayName = votes[uid].displayName;
-                                if (result.hasOwnProperty(tid)) {
-                                    result[tid].count += 1;
-                                } else {
-                                    result[tid] = {
-                                        displayName: displayName,
-                                        count: 1
-                                    };
-                                }
-                            }
-
-                            var max = 0;
-                            var max_list = [];
-                            for (tid in result) {
-                                if (result[tid].count > max) {
-                                    max = result[tid].count;
-                                    max_list = [
-                                        [tid, result[tid].displayName]
-                                    ];
-                                } else if (result[tid].count == max) {
-                                    max_list.push([tid, result[tid].displayName]);
-                                }
-                            }
-                            if (max_list.length == 1) {
-                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE_RESULT, [max_list[0][1]], function() {
-                                    findghost.game.camp.alive.kill(max_list[0][0], function() {
-                                        findghost.game.vote.remove();
-                                    });
-                                });
-                            } else {
-                                findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.VOTE_CONTINUE, "", function() {
-                                    findghost.game.vote.remove();
-                                });
-                            }
-                            if (callback) {
-                                callback(true);
-                            }
-                        });
-                    } else {
-                        if (callback) {
-                            callback(false);
-                        }
-                    }
-                });
-            },
-            updateCallback: function(callback) {
-                findghost.game.vote.callback = findghost.db.sync.ref("/game/vote/");
-                findghost.game.vote.callback.on("value", function(snapshot) {
-                    callback(snapshot.val());
-                });
-            },
-            removeCallback: function() {
-                if (findghost.game.vote.callback) {
-                    findghost.game.vote.callback.off();
-                    findghost.game.vote.callback = undefined;
                 }
             }
         },

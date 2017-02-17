@@ -1,5 +1,14 @@
 # Find Ghost
 
+## Dependency 依赖包
+[js.cookie 2.1.3](https://github.com/js-cookie/js-cookie/releases/tag/v2.1.3)
+
+[jquery 1.11.1](https://github.com/jquery/jquery/releases/tag/1.11.1)
+
+[bootstrap 3.3.0](https://github.com/twbs/bootstrap/releases/tag/v3.3.0)
+
+[Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/JAVASCRIPT/java-script.html)
+
 ## 游戏介绍
 通过发言来判断阵营，设法让对方出局的游戏
 

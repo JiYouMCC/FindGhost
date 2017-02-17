@@ -19,9 +19,20 @@ findghost.handleError = function(error) {
     $("#modal_error").modal('show');
 }
 
+
+var inputColor = Cookies.get('input_color');
+if (inputColor) {
+    $("#input_color").val(inputColor);
+}
+
+// 游戏准备、未开始状态才执行清理
 // clean sleeping user per 10 secs
 setInterval(function() {
-    findghost.hall.user.clear();
+    findghost.game.status.get(function(status) {
+        if (status && status != findghost.GAME_STATUS.ONGOING) {
+            findghost.hall.user.clear();
+        }
+    });
 }, 10000);
 
 // heartbreak
@@ -54,9 +65,16 @@ findghost.hall.user.updateCallback(function(snapshot) {
     $("#user_list").text("");
     var users = snapshot.val();
     var count = 0;
+    var currentDate = findghost.getCurrentDate();
     for (uid in users) {
         var displayName = users[uid].displayName;
-        $("#user_list").append($("<li></li>").addClass("list-group-item").text(displayName));
+        var date = users[uid].date;
+        var li = $("<li></li>").addClass("list-group-item").text(displayName);
+        if (date + findghost.userSleepTime < currentDate) {
+            li.addClass('list-group-item-warning');
+        }
+
+        $("#user_list").append(li);
         count += 1;
     }
     $("#online_count").text(count);
@@ -168,14 +186,11 @@ function updateVoteSelect() {
 // game status listener
 findghost.game.status.updateCallback(function(gameStatus) {
     $("#span_game_status").text(gameStatus);
-    if (gameStatus == findghost.GAME_STATUS.NOT_START) {
-        findghost.game.words.clean();
-    }
+    findghost.game.words.clean();
     var user = findghost.user.get();
     findghost.game.role.get(undefined, function(gameRole) {
         formStatusSetting(user, gameRole, gameStatus);
     });
-
 });
 
 
@@ -493,3 +508,7 @@ $("#button_white_commit").click(function() {
         });
     })
 });
+
+$("#input_color").change(function(){
+    Cookies.set("input_color", $(this).val());
+})
