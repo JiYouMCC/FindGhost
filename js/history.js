@@ -73,9 +73,15 @@ findghost.history = {
             callback(snapshot.val());
         });
     },
-    list: function(callback) {
-        findghost.db.sync.ref("/history/list").orderByKey().limitToLast(25).once("value", function(snapshot) {
-            callback(snapshot.val());
-        });
+    list: function(start, count, callback) {
+        if (start) {
+            findghost.db.sync.ref("/history/list").orderByKey().limitToLast(count).once("value", function(snapshot) {
+                callback(snapshot.val());
+            });
+        } else {
+            findghost.db.sync.ref("/history/list").orderByKey().limitToLast(count).once("value", function(snapshot) {
+                callback(snapshot.val());
+            });
+        }
     }
 }

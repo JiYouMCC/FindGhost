@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
     <style type="text/css">
-      #messages {
+      #messages,
+      #history_message,
+      #history_menu {
         overflow-y: auto
       }
 
@@ -40,7 +42,7 @@
               <a id="menu_rule" href="#" role="button" aria-haspopup="true" aria-expanded="false">规则说明</a>
             </li>
             <li>
-              <a id="menu_gameHistory" href="game_history.html" title="游戏记录"  target="_blank">游戏记录</a>
+              <a id="menu_history" href="#" role="button" aria-haspopup="true" aria-expanded="false" title="游戏记录"">游戏记录</a>
             </li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">开发相关<span class="caret"></span></a>
@@ -96,7 +98,6 @@
                   <button id="button_ready_owner" style="display:none;" class="btn btn-default">给词</button>
                   <button id="button_start" style="display:none;" class="btn btn-default">开始</button>
                   <button id="button_cancel" style="display:none;" class="btn btn-default">取消</button>
-                  <button id="button_pass" style="display:none;" class="btn btn-default">过</button>
                   <div class="btn-group">
                     <select id="select_vote" style="display:none;" class="form-control">
                     </select>
@@ -428,6 +429,37 @@
         </div>
       </div>
     </div>
+    <!-- history modal -->
+    <div id="modal_history" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="modal_history" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">游戏记录</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div id="history_menu" class="col-md-3">
+            <ul id="history_list" class="list-group">
+            </ul>
+          </div>
+          <div class="col-md-9">
+            <div class="list-group">
+              <div class="list-group-item">
+                <div id="history_message">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+        </div>
+      </div>
+    </div>
+
   </body>
   <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
   <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>

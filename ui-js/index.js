@@ -48,6 +48,8 @@ setInterval(function() {
 $(window).resize(function() {
     $("#left_pannel").height(window.innerHeight - 94);
     $("#messages").height(window.innerHeight - 265);
+    $("#history_message").height(window.innerHeight - 265);
+    $("#history_menu").height(window.innerHeight - 265);
 });
 $(window).load(function() {
     $(window).resize();
@@ -83,6 +85,13 @@ findghost.hall.user.updateCallback(function(snapshot) {
 // message listener
 findghost.hall.message.addCallback(function(snapshot) {
     var messageInfo = snapshot.val();
+    addMessage(messageInfo, "#messages");
+    if ($("#checkbox_autoscroll").is(':checked')) {
+        $("#messages").scrollTop($("#messages").prop("scrollHeight"));
+    }
+});
+
+function addMessage(messageInfo, elementId) {
     var date = messageInfo.date;
     var message = messageInfo.msg;
     var messageType = messageInfo.type;
@@ -90,7 +99,7 @@ findghost.hall.message.addCallback(function(snapshot) {
     if (messageType == findghost.hall.message.TYPE.SYSTEM) {
         var params = messageInfo.uname;
         var messageTxt = findghost.hall.message.parseMessage(findghost.hall.message.SYSTEM_MESSAGE_TXT, message, params);
-        $("#messages").append(
+        $(elementId).append(
             $("<div></div>").addClass("text-danger").append(
                 $("<span></span>").text("【系统消息】").append(
                     $("<span></span>").text(messageTxt)
@@ -100,7 +109,7 @@ findghost.hall.message.addCallback(function(snapshot) {
     } else if (messageType == findghost.hall.message.TYPE.GAME) {
         var params = messageInfo.uname;
         var messageTxt = findghost.hall.message.parseMessage(findghost.hall.message.GAME_MESSAGE_TXT, message, params);
-        $("#messages").append(
+        $(elementId).append(
             $("<div></div>").addClass("text-info").append(
                 $("<span></span>").text("【游戏信息】").append(
                     $("<span></span>").text(messageTxt)
@@ -110,12 +119,9 @@ findghost.hall.message.addCallback(function(snapshot) {
     } else {
         var userDisplay = messageInfo.uname;
         var color = messageInfo.color;
-        $("#messages").append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").attr("style", "color:" + color).text(userDisplay + "：")).append($("<span></span>").attr("style", "color:" + color).text(message)));
+        $(elementId).append($("<div></div>").append($("<span></span>").text(findghost.formatDate(dateTime) + " ")).append($("<span></span>").attr("style", "color:" + color).text(userDisplay + "：")).append($("<span></span>").attr("style", "color:" + color).text(message)));
     }
-    if ($("#checkbox_autoscroll").is(':checked')) {
-        $("#messages").scrollTop($("#messages").prop("scrollHeight"));
-    }
-});
+}
 
 // login/logout listener
 findghost.user.updateCallback(function(user) {
@@ -479,6 +485,19 @@ $("#menu_rule").click(function() {
     $("#modal_rule").modal('show');
 });
 
+$("#menu_history").click(function() {
+    $("#modal_history").modal('show');
+    $("#history_list").text("");
+    findghost.history.list(null, 500, function(list){
+        for (index in list) {
+            var info = list[index];
+            $("#history_list").append($("<a></a>").attr("id", "history_" + index).attr('history_id', index).addClass("list-group-item").text(info.manWord + " | "+info.ghostWord))
+        }
+        $("#history_list").append($("<a></a>").addClass("list-group-item").text("更多..."));
+        enableHistoryClick();
+    });
+});
+
 $("#button_vote").click(function() {
     findghost.game.vote.set($("#select_vote").val(), $("#select_vote option:selected").text(), function() {
         findghost.game.vote.result();
@@ -512,3 +531,15 @@ $("#button_white_commit").click(function() {
 $("#input_color").change(function(){
     Cookies.set("input_color", $(this).val());
 })
+
+function enableHistoryClick() {
+    $("a[id^='history_']").click(function(event) {
+        var h = $(this).attr("history_id");
+        findghost.history.read(h, function(messages) {
+            $("#history_message").text("");
+            for(index in messages) {
+                addMessage(messages[index], '#history_message')
+            }
+        });
+    });
+}
