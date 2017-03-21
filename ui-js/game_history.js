@@ -22,30 +22,7 @@ $(window).load(function() {
     $(window).resize();
 });
 
-findghost.history.list(function(historirs) {
-    $("#history_list").text("");
-    for (h in historirs) {
-        var history = historirs[h];
-        var manWord = history["manWord"];
-        var ghostWord = history["ghostWord"];
-        var date = new Date(parseInt(h));
-        var men = history["men"];
-        var ghosts = history["ghosts"];
-        var winer = history["winer"];
-        var ownerInfo = history["owner"];
-        var content = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + findghost.formatDate(date);
-        $("#history_list").append(
-            $("<tr></tr>").attr("history_id", h).attr("href", "#")
-            .append($("<td></td>").addClass("text-center").text(content))
-            .append($("<td></td>").addClass("text-center").text(manWord))
-            .append($("<td></td>").addClass("text-center").text(ghostWord))
-            .append($("<td></td>").addClass("text-center").text(ownerInfo.displayName))
-            .append($("<td></td>").addClass("text-center").text(winer))
-        );
-    }
-});
-
-$("#history_list").on("click", "tr", function(event) {
+("#history_list").on("click", "tr", function(event) {
     var h = $(this).attr("history_id");
     $('[history_id]').removeClass("info");
     $("#messages").text("");
