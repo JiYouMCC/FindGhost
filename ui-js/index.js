@@ -2,8 +2,8 @@ $('[data-toggle="tooltip"]').tooltip();
 
 findghost.db.init("firebase", {
     apiKey: "AIzaSyBwoRgviI0LxfS3vaiXk-o8MTcVCaywgmY",
-    authDomain: "https://zhuagui-9ccbf-default-rtdb.asia-southeast1.firebasedatabase.app",
-    databaseURL: "https://zhuagui-9ccbf.firebaseio.com",
+    authDomain: "https://zhuagui-9ccbf.firebaseio.com",
+    databaseURL: "https://zhuagui-9ccbf-default-rtdb.asia-southeast1.firebasedatabase.app",
     storageBucket: "zhuagui-9ccbf.appspot.com",
     messagingSenderId: "292064845703"
 });
