@@ -871,7 +871,7 @@ var findghost = {
                                                 findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.WHITE_RUN, [displayName]);
                                                 findghost.db.sync.ref("/game/users/" + uid).remove()
                                             })
-                                        } else {
+                                        } else{
                                             findghost.hall.message.sendGame(findghost.hall.message.GAME_MESSAGE.WHITE_LEAVE, [displayName]);
                                         }
                                     });
