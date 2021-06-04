@@ -19,7 +19,6 @@ findghost.handleError = function(error) {
     $("#modal_error").modal('show');
 }
 
-
 var inputColor = Cookies.get('input_color');
 if (inputColor) {
     $("#input_color").val(inputColor);
