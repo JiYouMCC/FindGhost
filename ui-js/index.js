@@ -1,6 +1,6 @@
 $('[data-toggle="tooltip"]').tooltip();
-// init wilddog
-findghost.db.init({
+
+findghost.db.init("firebase", {
     apiKey: "AIzaSyBwoRgviI0LxfS3vaiXk-o8MTcVCaywgmY",
     authDomain: "https://zhuagui-9ccbf-default-rtdb.asia-southeast1.firebasedatabase.app",
     databaseURL: "https://zhuagui-9ccbf.firebaseio.com",
